@@ -1,5 +1,5 @@
 # SteamQuack
-A remake of the Steam game recommendation platform and website, [steamquack.com](https://steamquack.com). SteamQuack aims to analyze a user's play habits from the popular PC gaming platform Steam and provide them with personalized recommendations for new games.
+A remake of the Steam game recommendation platform and website, [steamquack.com](https://steamquack.com), originally created by one of the members, Liam. SteamQuack aims to analyze a user's play habits from the popular PC gaming platform Steam and provide them with personalized recommendations for new games.
 SteamQuack offers users full reign over parameter weights of the recommendation algorithm in an engaging way that brings both additional novelty and utility to the platform. Additionally, users are guided through the experience by a
 mascot character, Ducktor Gamez, informing them about the service's features in a comedic and light-hearted fashion.
 
