@@ -2,6 +2,8 @@ As a developer, I want to retain all of the original sites features, so that it 
 
 As a back-end developer, I want a dedicated database, so that I can store up-to-date data on steam games.
 
+As a back-end developer, I want to populate the dedicated database with steam game data, so that it isn't reliant on the steam API during regular use for game data.
+
 As a back-end developer, I want the database to be self-updating, so that I do not have to manually and continuously update the game data.
 
 As a back-end developer, I want to integrate my site with steam's public API, so that I can acquire game data and user play data.
@@ -15,6 +17,10 @@ As a front-end developer, I want an animated character on screen at all times, t
 As a front-end developer, I want to give the site personality, so that it stands out among other similar websites.
 
 As a front-end developer, I want games that are on sale to have a visual indicator, so that they stand out to the viewer.
+
+As a front-end developer, I want a UI mockup of the main site page, so that I can have a reference for implementing the interface.
+
+As a front-end developer, I want mock data that emulates the backend, so that I can test the site without relying on the backend.
 
 As a mobile user, I want the app to be easily usable from my phone's web browser, so that the experience feels the same regardless of where I am accessing the website.
 
