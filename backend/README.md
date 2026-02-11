@@ -37,7 +37,7 @@
 
 2. Run the database example (temporary testing):
    ```bash
-   go run example.go
+   go run main.go
    ```
 
 3. This will create a SQLite database file `steamquack.db` with the schema and sample data.
