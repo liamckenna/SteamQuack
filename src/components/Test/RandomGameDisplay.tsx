@@ -4,7 +4,7 @@ import steamAppsJson from '../../mock-data/steam-apps.json'
 
 const steamApps: SteamApps = steamAppsJson as SteamApps
 
-function SteamAppDisplay() {
+function RandomGameDisplay() {
   const [appID, setAppID] = useState(-1)
 
   const displayRandomGame = () => {
@@ -37,4 +37,4 @@ function SteamAppDisplay() {
   )
 }
 
-export default SteamAppDisplay
+export default RandomGameDisplay
