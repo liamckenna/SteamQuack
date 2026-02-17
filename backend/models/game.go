@@ -2,24 +2,21 @@ package models
 
 import (
 	"time"
-
-	"gorm.io/gorm"
 )
 
 type Game struct {
-	ID               uint           `gorm:"primaryKey" json:"id"`
-	AppID            uint32         `gorm:"uniqueIndex;not null" json:"app_id"`
-	Name             string         `gorm:"not null" json:"name"`
-	Description      string         `gorm:"type:text" json:"description"`
-	InitialPrice     float64        `json:"initial_price"`
-	CurrentPrice     float64        `json:"current_price"`
-	ReleaseDate      time.Time      `json:"release_date"`
-	ReleaseDateUnix  int64          `json:"release_date_unix"`
-	ReviewCount      int            `json:"review_count"`
-	ReviewPercentage float64        `json:"review_percentage"`
-	CreatedAt        time.Time      `json:"created_at"`
-	UpdatedAt        time.Time      `json:"updated_at"`
-	DeletedAt        gorm.DeletedAt `gorm:"index" json:"-"`
+	ID               uint      `gorm:"primaryKey" json:"id"`
+	AppID            uint32    `gorm:"uniqueIndex;not null" json:"app_id"`
+	Name             string    `gorm:"not null" json:"name"`
+	Description      string    `gorm:"type:text" json:"description"`
+	InitialPrice     float64   `json:"initial_price"`
+	CurrentPrice     float64   `json:"current_price"`
+	ReleaseDate      time.Time `json:"release_date"`
+	ReleaseDateUnix  int64     `json:"release_date_unix"`
+	ReviewCount      int       `json:"review_count"`
+	ReviewPercentage float64   `json:"review_percentage"`
+	CreatedAt        time.Time `json:"created_at"`
+	UpdatedAt        time.Time `json:"updated_at"`
 
 	// Relationships
 	Tags    []GameTag    `gorm:"foreignKey:GameID" json:"tags"`

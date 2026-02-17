@@ -7,6 +7,7 @@ import (
 
 	"steamquack/backend/config"
 	"steamquack/backend/database"
+	"steamquack/backend/steam"
 
 	"github.com/gorilla/mux"
 )
@@ -18,13 +19,27 @@ func main() {
 	// Initialize the database(creates tables if they don't exist)
 	database.InitDatabase()
 	defer database.CloseDatabase()
+	log.Println("Database initialized")
+
+	// Get database instance for the steam service
+	db := database.GetDB()
+
+	// Initialize Steam scraping service
+	steamService := steam.NewScrapingService(cfg, db)
+	defer steamService.Close()
 
 	// Set up API routes
 	r := mux.NewRouter()
 	r.HandleFunc("/api/health", healthHandler).Methods(http.MethodGet)
 
-	log.Printf("Steam API Key loaded: %s...", cfg.SteamAPIKey[:8])
-	log.Println("Database initialized")
+	// Scraping endpoints
+	r.HandleFunc("/api/scrape/games/{count}", ScrapeGamesHandler(steamService)).Methods("POST")       // scrapes multiple games (1-100)
+	r.HandleFunc("/api/scrape/game/{appid}", ScrapeSpecificGameHandler(steamService)).Methods("POST") // scrapes a specific game
+	r.HandleFunc("/api/stats", StatsHandler(steamService)).Methods("GET")                             // gets scraping statistics
+
+	// Start server
+	log.Printf("Available endpoints:")
+	log.Printf("  GET  /api/health - Health check")
 	log.Printf("API server running on http://localhost:%s", cfg.ServerPort)
 	log.Fatal(http.ListenAndServe(":"+cfg.ServerPort, r))
 }
