@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
-import "./App.css";
+import RandomGameDisplay from "./components/Test/RandomGameDisplay.tsx";
 import { getRecommendations, parseProfile } from "./api";
 import type { ProfileResult } from "./api";
+import "./App.css";
 
 function App() {
   const [profileInput, setProfileInput] = useState("");
@@ -167,6 +168,12 @@ function App() {
             ))}
           </ul>
         )}
+      </section>
+
+      <section style={{ marginTop: 24 }}>
+        <h2>Random Game Test</h2>
+
+        <RandomGameDisplay />
       </section>
     </div>
   );
