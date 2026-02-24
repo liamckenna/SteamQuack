@@ -8,6 +8,8 @@ As a back-end developer, I want the database to be self-updating, so that I do n
 
 As a back-end developer, I want to integrate my site with steam's public API, so that I can acquire game data and user play data.
 
+As a front-end developer, I want components in the appropriate places as outlined by the mock UI reference, so that the stylized layout is still functional.
+
 As a front-end developer, I want a rest API to integrate with the back-end, so that I can send and receive data efficiently.
 
 As a front-end developer, I want to format the main page dynamically such that the site remains a one-page application, to ease the burden of navigation for the user and consolidate the site's features.
