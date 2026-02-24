@@ -1,9 +1,9 @@
 import "./UserIcon.css";
-
+import DefaultIcon from '../../assets/images/Sample Profile Icon.jpg'
 export default function UserIcon() {
     return (
         <div className="user-icon">
-            User icon box
+            <img src={DefaultIcon} alt="Default User Icon" />
         </div>
     )
 }
