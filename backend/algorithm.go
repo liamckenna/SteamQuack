@@ -66,19 +66,17 @@ func CreateRecommendations(tasteProfile map[string]float64, settings map[string]
 
 func CreateTasteProfile(profileURL string) map[string]float64 {
 
-	// api call to get all games in the user's profile
+	// called automatically from successful api call after ensuring user has a public profile
 
 	gamePlaytimeMap := GetUserAppsAndPlaytime(profileURL)
 
 	userTagWeights := GetInitialTagWeights()
 
 	for gameID, playtime := range gamePlaytimeMap {
-		gameTagWeights := CreateBaseTagWeights(gameID) // replace with GetBaseTagWeights when we store them in the db
-		if playtime > 0 {
-			for tag, weight := range gameTagWeights {
-				if weight > 0.0 {
-					userTagWeights[tag] += weight * float64(playtime)
-				}
+		gameTagWeights := GetBaseTagWeights(gameID) 	
+		if playtime > 0 { 								 
+			for tag, weight := range gameTagWeights {	
+				userTagWeights[tag] += weight * float64(playtime)
 			}
 		}
 	}
@@ -86,15 +84,29 @@ func CreateTasteProfile(profileURL string) map[string]float64 {
 	return userTagWeights
 }
 
+func GetBaseTagWeights(gameID uint32) map[string]float64 {
+
+	
+	tagWeights := make(map[string]float64)
+
+	// get tag weights using gameID in the db
+	// add only if weight > 0.0
+	
+	return tagWeights
+
+}
+
 func GetUserAppsAndPlaytime(profileURL string) map[uint32]uint32 {
 
+	gamePlaytimes := make(map[uint32]uint32)
+	
 	// api call to get app ids and playtime for all games in the user's profile
-
-	//for each game in profile:
+	
+	// for each game in profile:
 	// get playtime for each game, store in map[appID]playtime
 
-	return make(map[uint32]uint32)
-	//empty map for now til we do this
+	return gamePlaytimes
+	// empty map for now til we do this
 }
 
 func CreateBaseTagWeights(gameID uint32) map[string]float64 {
@@ -112,6 +124,7 @@ func CreateBaseTagWeights(gameID uint32) map[string]float64 {
 	}
 
 	//get game tags from steamspy api, assume map[string]uint32 of tag counts is returned called gameTagCounts
+	
 	gameTagCounts := make(map[string]uint32)
 
 	for tag, count := range gameTagCounts {
@@ -125,10 +138,29 @@ func CreateBaseTagWeights(gameID uint32) map[string]float64 {
 			tagWeights[tag] = float64(gameTagCounts[tag]) / float64(categoryTotals[category])
 		}
 	}
-
+	
 	return tagWeights
-
 }
+
+func GetAllTagCategories() []string {
+
+	return []string{
+		"super-genre",
+		"genre",
+		"sub-genre",
+		"visuals & viewpoint",
+		"themes & moods",
+		"features",
+		"players",
+		"other",
+		"software",
+		"assessments",
+		"ratings",
+		"hardware-input",
+		"funding",
+	}
+}
+
 
 func GetAllPossibleTags() map[string]string {
 
@@ -960,24 +992,5 @@ func GetInitialTagWeights() map[string]float64 {
 		"early access": 0.0,
 		"free to play": 0.0,
 		"kickstarter":  0.0,
-	}
-}
-
-func GetAllTagCategories() []string {
-
-	return []string{
-		"super-genre",
-		"genre",
-		"sub-genre",
-		"visuals & viewpoint",
-		"themes & moods",
-		"features",
-		"players",
-		"other",
-		"software",
-		"assessments",
-		"ratings",
-		"hardware-input",
-		"funding",
 	}
 }
