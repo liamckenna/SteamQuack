@@ -1,6 +1,6 @@
 package steam
 
-// App List API structs - Updated for new IStoreService API
+// App List API struct
 type SteamAppListResponse struct {
 	Response struct {
 		Apps         []SteamApp `json:"apps"`
@@ -52,4 +52,14 @@ type SteamCategory struct {
 type SteamGenre struct {
 	ID          string `json:"id"`
 	Description string `json:"description"`
+}
+
+type SteamSpyAppDetails struct {
+	AppID           uint32         `json:"appid"`
+	Name            string         `json:"name"`
+	Tags            map[string]int `json:"tags"` // tag_name -> vote_count
+	Owners          string         `json:"owners"`
+	Players2W       int            `json:"players_2weeks"`
+	AveragePlaytime int            `json:"average_playtime"` // in minutes
+	MedianPlaytime  int            `json:"median_playtime"`  // in minutes
 }

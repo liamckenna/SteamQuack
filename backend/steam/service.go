@@ -106,8 +106,15 @@ func (s *ScrapingService) scrapeIndividualGame(appID uint32) error {
 		return fmt.Errorf("failed to save game: %w", err)
 	}
 
-	// convert and save tags (categories + genres)
-	tags := SteamTagsToGameTags(gameDetails, game.ID)
+	// fetch community voted tags from SteamSpy using game ID
+	steamspyData, err := s.client.FetchSteamSpyData(appID)
+	if err != nil {
+		log.Printf("Warning: SteamSpy unavailable for app %d, using Steam tags: %v", appID, err)
+		steamspyData = nil // will cause fallback to be used in transform function
+	}
+
+	// convert and save tags
+	tags := SteamTagsToGameTags(gameDetails, game.ID, steamspyData)
 	if len(tags) > 0 {
 		if err := tx.CreateInBatches(tags, 10).Error; err != nil {
 			tx.Rollback()

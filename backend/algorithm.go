@@ -73,9 +73,9 @@ func CreateTasteProfile(profileURL string) map[string]float64 {
 	userTagWeights := GetInitialTagWeights()
 
 	for gameID, playtime := range gamePlaytimeMap {
-		gameTagWeights := GetBaseTagWeights(gameID) 	
-		if playtime > 0 { 								 
-			for tag, weight := range gameTagWeights {	
+		gameTagWeights := GetBaseTagWeights(gameID)
+		if playtime > 0 {
+			for tag, weight := range gameTagWeights {
 				userTagWeights[tag] += weight * float64(playtime)
 			}
 		}
@@ -86,12 +86,11 @@ func CreateTasteProfile(profileURL string) map[string]float64 {
 
 func GetBaseTagWeights(gameID uint32) map[string]float64 {
 
-	
 	tagWeights := make(map[string]float64)
 
 	// get tag weights using gameID in the db
 	// add only if weight > 0.0
-	
+
 	return tagWeights
 
 }
@@ -99,9 +98,9 @@ func GetBaseTagWeights(gameID uint32) map[string]float64 {
 func GetUserAppsAndPlaytime(profileURL string) map[uint32]uint32 {
 
 	gamePlaytimes := make(map[uint32]uint32)
-	
+
 	// api call to get app ids and playtime for all games in the user's profile
-	
+
 	// for each game in profile:
 	// get playtime for each game, store in map[appID]playtime
 
@@ -124,8 +123,17 @@ func CreateBaseTagWeights(gameID uint32) map[string]float64 {
 	}
 
 	//get game tags from steamspy api, assume map[string]uint32 of tag counts is returned called gameTagCounts
-	
+	db := database.GetDB()
+	var gameTags []models.GameTag
+	result := db.Where("game_id = ?", gameID).Find(&gameTags)
+	if result.Error != nil {
+		return tagWeights
+	}
+
 	gameTagCounts := make(map[string]uint32)
+	for _, tag := range gameTags {
+		gameTagCounts[tag.TagName] = uint32(tag.Weight) // convert from float64 back to vote count
+	}
 
 	for tag, count := range gameTagCounts {
 		category := tagsWithCategories[tag]
@@ -138,7 +146,7 @@ func CreateBaseTagWeights(gameID uint32) map[string]float64 {
 			tagWeights[tag] = float64(gameTagCounts[tag]) / float64(categoryTotals[category])
 		}
 	}
-	
+
 	return tagWeights
 }
 
@@ -160,7 +168,6 @@ func GetAllTagCategories() []string {
 		"funding",
 	}
 }
-
 
 func GetAllPossibleTags() map[string]string {
 

@@ -81,6 +81,30 @@ func (c *APIClient) FetchGameDetails(appID uint32) (*SteamGameDetails, error) {
 	return nil, fmt.Errorf("game %d not found or failed to fetch", appID)
 }
 
+// fetches tag data from SteamSpy
+func (c *APIClient) FetchSteamSpyData(appID uint32) (*SteamSpyAppDetails, error) {
+	<-c.rateLimiter.C // Wait for rate limit
+
+	url := fmt.Sprintf("https://steamspy.com/api.php?request=appdetails&appid=%d", appID)
+
+	resp, err := c.httpClient.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch data for %d: %w", appID, err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("SteamSpy API returned status %d for app %d", resp.StatusCode, appID)
+	}
+
+	var spyData SteamSpyAppDetails
+	if err := json.NewDecoder(resp.Body).Decode(&spyData); err != nil {
+		return nil, fmt.Errorf("failed to decode data for %d: %w", appID, err)
+	}
+
+	return &spyData, nil
+}
+
 // cleans up the rate limiter
 func (c *APIClient) Close() {
 	c.rateLimiter.Stop()
