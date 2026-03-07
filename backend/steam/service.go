@@ -5,6 +5,7 @@ import (
 	"log"
 	"time"
 
+	"steamquack/backend/algorithm"
 	"steamquack/backend/config"
 	"steamquack/backend/models"
 
@@ -125,6 +126,11 @@ func (s *ScrapingService) scrapeIndividualGame(appID uint32) error {
 	// commit transaction
 	if err := tx.Commit().Error; err != nil {
 		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	// normalize tag weights after transaction is committed
+	if len(tags) > 0 {
+		algorithm.CreateBaseTagWeights(uint32(game.ID))
 	}
 
 	return nil

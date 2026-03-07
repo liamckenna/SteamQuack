@@ -1,10 +1,11 @@
-package main
+package algorithm
 
 import (
 	"fmt"
 	"sort"
 	"steamquack/backend/database"
 	"steamquack/backend/models"
+	"strings"
 )
 
 type GameScore struct {
@@ -90,6 +91,16 @@ func GetBaseTagWeights(gameID uint32) map[string]float64 {
 
 	// get tag weights using gameID in the db
 	// add only if weight > 0.0
+	db := database.GetDB()
+	var gameTags []models.GameTag
+	result := db.Where("game_id = ?", gameID).Find(&gameTags)
+	if result.Error != nil {
+		return tagWeights
+	}
+
+	for _, tag := range gameTags {
+		tagWeights[tag.TagName] = tag.Weight
+	}
 
 	return tagWeights
 
@@ -132,7 +143,7 @@ func CreateBaseTagWeights(gameID uint32) map[string]float64 {
 
 	gameTagCounts := make(map[string]uint32)
 	for _, tag := range gameTags {
-		gameTagCounts[tag.TagName] = uint32(tag.Weight) // convert from float64 back to vote count
+		gameTagCounts[strings.ToLower(tag.TagName)] = uint32(tag.Weight)
 	}
 
 	for tag, count := range gameTagCounts {
@@ -145,6 +156,30 @@ func CreateBaseTagWeights(gameID uint32) map[string]float64 {
 		if categoryTotals[category] > 0 {
 			tagWeights[tag] = float64(gameTagCounts[tag]) / float64(categoryTotals[category])
 		}
+	}
+
+	for _, gameTag := range gameTags {
+		lowerTagName := strings.ToLower(gameTag.TagName)
+		if normalizedWeight, exists := tagWeights[lowerTagName]; exists {
+			db.Model(&gameTag).Update("weight", normalizedWeight)
+		}
+	}
+
+	// add tags with no votes with 0.0 weight
+	var missingTags []models.GameTag
+	for zeroTag := range tagsWithCategories {
+		if _, hadVotes := gameTagCounts[zeroTag]; !hadVotes {
+			missingTags = append(missingTags, models.GameTag{
+				GameID:  uint(gameID),
+				TagName: zeroTag,
+				Weight:  0.0,
+			})
+			tagWeights[zeroTag] = 0.0
+		}
+	}
+
+	if len(missingTags) > 0 {
+		db.Create(&missingTags)
 	}
 
 	return tagWeights
@@ -202,6 +237,7 @@ func GetAllPossibleTags() map[string]string {
 		"clicker":               "genre",
 		"cycling":               "genre",
 		"diplomacy":             "genre",
+		"e-sports":              "genre",
 		"esports":               "genre",
 		"experimental":          "genre",
 		"exploration":           "genre",
@@ -301,6 +337,7 @@ func GetAllPossibleTags() map[string]string {
 		"souls-like":                "sub-genre",
 		"spectacle fighter":         "sub-genre",
 		"spelling":                  "sub-genre",
+		"psychological horror":      "sub-genre",
 		"survival horror":           "sub-genre",
 		"tactical rpg":              "sub-genre",
 		"third-person shooter":      "sub-genre",
@@ -407,6 +444,7 @@ func GetAllPossibleTags() map[string]string {
 		"politics":          "themes & moods",
 		"pool":              "themes & moods",
 		"post-apocalyptic":  "themes & moods",
+		"nostalgia":         "themes & moods",
 		"retro":             "themes & moods",
 		"robots":            "themes & moods",
 		"romance":           "themes & moods",
@@ -618,6 +656,7 @@ func GetInitialTagWeights() map[string]float64 {
 		"clicker":               0.0,
 		"cycling":               0.0,
 		"diplomacy":             0.0,
+		"e-sports":              0.0,
 		"esports":               0.0,
 		"experimental":          0.0,
 		"exploration":           0.0,
@@ -717,6 +756,7 @@ func GetInitialTagWeights() map[string]float64 {
 		"souls-like":                0.0,
 		"spectacle fighter":         0.0,
 		"spelling":                  0.0,
+		"psychological horror":      0.0,
 		"survival horror":           0.0,
 		"tactical rpg":              0.0,
 		"third-person shooter":      0.0,
@@ -823,6 +863,7 @@ func GetInitialTagWeights() map[string]float64 {
 		"politics":          0.0,
 		"pool":              0.0,
 		"post-apocalyptic":  0.0,
+		"nostalgia":         0.0,
 		"retro":             0.0,
 		"robots":            0.0,
 		"romance":           0.0,

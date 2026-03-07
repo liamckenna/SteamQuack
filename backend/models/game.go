@@ -27,7 +27,7 @@ type GameTag struct {
 	ID      uint    `gorm:"primaryKey" json:"id"`
 	GameID  uint    `gorm:"not null;index" json:"game_id"`
 	TagName string  `gorm:"not null" json:"tag_name"`
-	Weight  float64 `gorm:"default:1.0" json:"weight"`
+	Weight  float64 `gorm:"default:0.0" json:"weight"`
 
 	// Foreign key relationship
 	Game Game `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"-"`
