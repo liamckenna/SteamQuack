@@ -8,6 +8,7 @@ import (
 	"steamquack/backend/config"
 	"steamquack/backend/database"
 	"steamquack/backend/steam"
+	"steamquack/backend/update"
 
 	"github.com/gorilla/mux"
 )
@@ -21,6 +22,13 @@ func main() {
 	db := database.GetDB()
 	steamService := steam.NewScrapingService(cfg, db)
 	defer steamService.Close()
+
+	// set up DB update scheduler
+	updateService := update.NewUpdateService(steamService, db)
+	scheduler := update.NewScheduler(updateService)
+	_ = scheduler
+	//scheduler.Start()
+	//defer scheduler.Stop()
 
 	// set up API routes
 	r := mux.NewRouter()
