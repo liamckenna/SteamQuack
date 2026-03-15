@@ -1,0 +1,61 @@
+.folder {
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: #1a2434;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.folder-tabs {
+  display: flex;
+  gap: 0;
+  padding: 0;
+  background: transparent;
+  min-height: 40px;
+  align-items: flex-end;
+  width: 100%;
+}
+
+.folder-tab {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 12px 12px 0 0;
+  background: var(--folder-tab-bg, #334155);
+  color: var(--folder-tab-color, #94a3b8);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin-right: 2px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.folder-tab:last-child {
+  margin-right: 0;
+}
+
+.folder-tab:hover {
+  background: var(--folder-tab-hover, #475569);
+  color: #e2e8f0;
+}
+
+.folder-tab--active {
+  background: var(--folder-bg, #1e293b);
+  color: #f1f5f9;
+  position: relative;
+  z-index: 1;
+  padding-bottom: 12px;
+  margin-bottom: -2px;
+  box-shadow: none;
+}
+
+.folder-panel {
+  flex: 1;
+  overflow: auto;
+  padding: 16px;
+  border-radius: 0 0 12px 12px;
+}
