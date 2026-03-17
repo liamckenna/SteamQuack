@@ -63,3 +63,31 @@ type SteamSpyAppDetails struct {
 	AveragePlaytime int            `json:"average_playtime"` // in minutes
 	MedianPlaytime  int            `json:"median_playtime"`  // in minutes
 }
+
+type SteamPlayerSummaryResponse struct {
+	Response struct {
+		Players []SteamPlayerSummary `json:"players"`
+	} `json:"response"`
+}
+
+type SteamPlayerSummary struct {
+	SteamID      string `json:"steamid"`
+	PersonaName  string `json:"personaname"`
+	ProfileURL   string `json:"profileurl"`
+	Avatar       string `json:"avatar"`
+	AvatarMedium string `json:"avatarmedium"`
+	AvatarFull   string `json:"avatarfull"`
+}
+
+type SteamOwnedGamesResponse struct {
+	Response struct {
+		GameCount int              `json:"game_count"`
+		Games     []SteamOwnedGame `json:"games"`
+	} `json:"response"`
+}
+
+type SteamOwnedGame struct {
+	AppID           uint32 `json:"appid"`
+	Name            string `json:"name"`
+	PlaytimeForever int    `json:"playtime_forever"` // in minutes
+}

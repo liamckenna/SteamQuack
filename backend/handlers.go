@@ -67,3 +67,50 @@ func StatsHandler(steamService *steam.ScrapingService) http.HandlerFunc {
 		json.NewEncoder(w).Encode(stats)
 	}
 }
+
+func GetUserProfileHandler(steamService *steam.ScrapingService) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		steamID := vars["steamid"]
+
+		if steamID == "" {
+			http.Error(w, "Steam ID is required", http.StatusBadRequest)
+			return
+		}
+
+		// gets user profile for display as well as their owned games
+		playerSummary, err := steamService.GetUserProfile(steamID)
+		if err != nil {
+			http.Error(w, "Failed to fetch user profile", http.StatusInternalServerError)
+			return
+		}
+
+		ownedGames, err := steamService.GetUserOwnedGames(steamID)
+		if err != nil {
+			http.Error(w, "Failed to fetch owned games", http.StatusInternalServerError)
+			return
+		}
+
+		userGames := make([]map[string]interface{}, 0)
+		for _, game := range ownedGames.Response.Games {
+			userGames = append(userGames, map[string]interface{}{
+				"app_id":           game.AppID,
+				"name":             game.Name,
+				"playtime_forever": game.PlaytimeForever,
+			})
+		}
+
+		response := map[string]interface{}{
+			"user": map[string]string{
+				"steam_id":     playerSummary.SteamID,
+				"persona_name": playerSummary.PersonaName,
+				"avatar":       playerSummary.Avatar,
+			},
+			"owned_games_count": len(userGames),
+			"owned_games":       userGames,
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+	}
+}

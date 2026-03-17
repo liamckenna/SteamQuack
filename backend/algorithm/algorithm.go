@@ -99,7 +99,9 @@ func GetBaseTagWeights(gameID uint32) map[string]float64 {
 	}
 
 	for _, tag := range gameTags {
-		tagWeights[tag.TagName] = tag.Weight
+		if tag.Weight > 0.0 {
+			tagWeights[tag.TagName] = tag.Weight
+		}
 	}
 
 	return tagWeights

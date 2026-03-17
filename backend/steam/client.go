@@ -105,6 +105,56 @@ func (c *APIClient) FetchSteamSpyData(appID uint32) (*SteamSpyAppDetails, error)
 	return &spyData, nil
 }
 
+// fetches player summary
+func (c *APIClient) FetchPlayerSummary(steamID string) (*SteamPlayerSummary, error) {
+	url := fmt.Sprintf("http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=%s&steamids=%s",
+		c.apiKey, steamID)
+
+	resp, err := c.httpClient.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch player summary: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("Steam API returned status %d", resp.StatusCode)
+	}
+
+	var summaryResp SteamPlayerSummaryResponse
+	if err := json.NewDecoder(resp.Body).Decode(&summaryResp); err != nil {
+		return nil, fmt.Errorf("failed to decode player summary response: %w", err)
+	}
+
+	if len(summaryResp.Response.Players) == 0 {
+		return nil, fmt.Errorf("no player data found for Steam ID: %s", steamID)
+	}
+
+	return &summaryResp.Response.Players[0], nil
+}
+
+// fetches games owned by a given player
+func (c *APIClient) FetchOwnedGames(steamID string) (*SteamOwnedGamesResponse, error) {
+	url := fmt.Sprintf("http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=%s&steamid=%s&format=json&include_appinfo=true&include_played_free_games=1",
+		c.apiKey, steamID)
+
+	resp, err := c.httpClient.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch owned games: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("Steam API returned status %d", resp.StatusCode)
+	}
+
+	var gamesResp SteamOwnedGamesResponse
+	if err := json.NewDecoder(resp.Body).Decode(&gamesResp); err != nil {
+		return nil, fmt.Errorf("failed to decode owned games response: %w", err)
+	}
+
+	return &gamesResp, nil
+}
+
 // cleans up the rate limiter
 func (c *APIClient) Close() {
 	c.rateLimiter.Stop()

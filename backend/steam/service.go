@@ -181,6 +181,16 @@ func (s *ScrapingService) GetScrapingStats() (map[string]interface{}, error) {
 	return stats, nil
 }
 
+// fetches a user's profile information
+func (s *ScrapingService) GetUserProfile(steamID string) (*SteamPlayerSummary, error) {
+	return s.client.FetchPlayerSummary(steamID)
+}
+
+// fetches a user's owned games by playtime
+func (s *ScrapingService) GetUserOwnedGames(steamID string) (*SteamOwnedGamesResponse, error) {
+	return s.client.FetchOwnedGames(steamID)
+}
+
 // clean up
 func (s *ScrapingService) Close() {
 	s.client.Close()
