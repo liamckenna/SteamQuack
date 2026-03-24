@@ -22,7 +22,7 @@ func ScrapeGamesHandler(steamService *steam.ScrapingService) http.HandlerFunc {
 
 		log.Printf("Starting scraping of %d games", count)
 		go func() {
-			if err := steamService.ScrapeGameData(count); err != nil {
+			if err := steamService.ScrapeGameData(count, 0); err != nil {
 				log.Printf("Scraping error: %v", err)
 			}
 		}()

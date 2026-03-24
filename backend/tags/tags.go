@@ -8,7 +8,7 @@ import (
 
 func GetBaseTagWeights(gameID uint32) map[string]float64 {
 
-	tagWeights := make(map[string]float64)
+	tagWeights := GetInitialTagWeights()
 
 	// get tag weights using gameID in the db
 	// add only if weight > 0.0

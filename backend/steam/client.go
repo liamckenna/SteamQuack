@@ -26,29 +26,29 @@ func NewAPIClient(apiKey string) *APIClient {
 }
 
 // fetches all Steam apps
-func (c *APIClient) FetchAppList() (*SteamAppListResponse, error) {
+func (c *APIClient) FetchAppList(lastAppId int) (*SteamAppListResponse, int, error) {
 	<-c.rateLimiter.C // Wait for rate limit
 
-	url := fmt.Sprintf("https://api.steampowered.com/IStoreService/GetAppList/v1/?key=%s&max_results=50000&last_appid=0", c.apiKey)
+	url := fmt.Sprintf("https://api.steampowered.com/IStoreService/GetAppList/v1/?key=%s&max_results=50000&last_appid=%d", c.apiKey, lastAppId)
 
 	log.Printf("Fetching app list from: %s", url)
 	resp, err := c.httpClient.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch app list: %w", err)
+		return nil, 0, fmt.Errorf("failed to fetch app list: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("API returned status %d", resp.StatusCode)
+		return nil, 0, fmt.Errorf("API returned status %d", resp.StatusCode)
 	}
 
 	var appList SteamAppListResponse
 	if err := json.NewDecoder(resp.Body).Decode(&appList); err != nil {
-		return nil, fmt.Errorf("failed to decode app list: %w", err)
+		return nil, 0, fmt.Errorf("failed to decode app list: %w", err)
 	}
 
 	log.Printf("Fetched %d apps from Steam API", len(appList.Response.Apps))
-	return &appList, nil
+	return &appList, int(appList.Response.Apps[len(appList.Response.Apps)-1].AppID), nil
 }
 
 // fetches detailed information for a specific game

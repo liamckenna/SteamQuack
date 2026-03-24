@@ -28,11 +28,11 @@ func NewScrapingService(cfg *config.Config, db *gorm.DB) *ScrapingService {
 }
 
 // scrapes game data from Steam
-func (s *ScrapingService) ScrapeGameData(maxGames int) error {
+func (s *ScrapingService) ScrapeGameData(maxGames int, nextLastAppId int) error {
 	log.Printf("Starting Steam game data scraping (max %d games)", maxGames)
 
 	// gets list of all apps
-	appList, err := s.client.FetchAppList()
+	appList, returnedLastAppId, err := s.client.FetchAppList(nextLastAppId)
 	if err != nil {
 		return fmt.Errorf("failed to fetch app list: %w", err)
 	}
@@ -73,7 +73,7 @@ func (s *ScrapingService) ScrapeGameData(maxGames int) error {
 		time.Sleep(2 * time.Second)
 	}
 
-	log.Printf("Scraping complete! Processed: %d", processed)
+	log.Printf("Scraping complete! Processed: %d (next batch starts at app %d)", processed, returnedLastAppId)
 	return nil
 }
 
