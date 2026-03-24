@@ -2,7 +2,6 @@ package database
 
 import (
 	"log"
-	"steamquack/backend/models"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -27,17 +26,17 @@ func InitDatabase() {
 	log.Println("Successfully connected to SQLite database")
 
 	// Auto-migrate the schema
-	err = DB.AutoMigrate(
-		&models.Game{},
-		&models.GameTag{},
-		&models.UserReview{},
-	)
+	//err = DB.AutoMigrate(
+	//	&models.Game{},
+	//	&models.GameTag{},
+	//	&models.UserReview{},
+	//)
+	//
+	//if err != nil {
+	//	log.Fatal("Failed to migrate database:", err)
+	//}
 
-	if err != nil {
-		log.Fatal("Failed to migrate database:", err)
-	}
-
-	log.Println("Database migration completed successfully")
+	//log.Println("Database migration completed successfully")
 }
 
 // GetDB returns the database instance

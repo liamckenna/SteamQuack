@@ -3,20 +3,23 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"steamquack/backend/config"
+	"steamquack/backend/database"
+	"steamquack/backend/steam"
 )
 
-type ProfileParseRequest struct{
+type ProfileParseRequest struct {
 	Profile string `json:"profile"`
 }
 
-type ProfileResult struct{
-	Status string `json:"status"` //"notFound, private, public"
-	Name string `json:"name,omitempty"`
+type ProfileResult struct {
+	Status  string `json:"status"` //"notFound, private, public"
+	Name    string `json:"name,omitempty"`
 	Picture string `json:"picture,omitempty"`
-	Summary any `json:"summary,omitempty"`
+	Summary any    `json:"summary,omitempty"`
 }
 
-func profileParseHandler(w http.ResponseWriter, r *http.Request){
+func profileParseHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	var req ProfileParseRequest
@@ -26,33 +29,50 @@ func profileParseHandler(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-	//dummy behavior (replace later with real Steam validation)
-	switch req.Profile {
-	case "notfound":
-		w.WriteHeader(http.StatusNotFound)
-		_ = json.NewEncoder(w).Encode(ProfileResult{
-			Status: "[not found]",
-		})
-		return
+	steamID := req.Profile
 
-	case "private":
-		_ = json.NewEncoder(w).Encode(ProfileResult{
-			Status:  "[private]",
-			Name:    "[user name]",
-			Picture: "[user image]",
-		})
-		return
-
-	default:
-		_ = json.NewEncoder(w).Encode(ProfileResult{
-			Status:  "[public]",
-			Name:    "[user name]",
-			Picture: "[user image]",
-			Summary: map[string]any{
-				"[headline]": "[user profile summary]",
-				"[games]":    42,
-			},
-		})
+	if steamID == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(map[string]string{"error": "steam id required"})
 		return
 	}
+
+	cfg := config.LoadConfig()
+	db := database.GetDB()
+	steamService := steam.NewScrapingService(cfg, db)
+
+	playerSummary, err := steamService.GetUserProfile(steamID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		_ = json.NewEncoder(w).Encode(map[string]string{"error": "failed to fetch user profile"})
+		return
+	}
+
+	ownedGames, err := steamService.GetUserOwnedGames(steamID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		_ = json.NewEncoder(w).Encode(map[string]string{"error": "failed to fetch owned games"})
+		return
+	}
+
+	userGames := make([]map[string]interface{}, 0)
+	for _, game := range ownedGames.Response.Games {
+		userGames = append(userGames, map[string]interface{}{
+			"app_id":           game.AppID,
+			"name":             game.Name,
+			"playtime_forever": game.PlaytimeForever,
+		})
+	}
+
+	_ = json.NewEncoder(w).Encode(ProfileResult{
+		Status:  "[public]",
+		Name:    playerSummary.PersonaName,
+		Picture: playerSummary.Avatar,
+		Summary: map[string]any{
+			"games_count": len(userGames),
+			"games":       userGames,
+		},
+	})
+
+	steamService.Close()
 }

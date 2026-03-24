@@ -3,11 +3,10 @@ package steam
 import (
 	"fmt"
 	"log"
-	"time"
-
-	"steamquack/backend/algorithm"
 	"steamquack/backend/config"
 	"steamquack/backend/models"
+	"steamquack/backend/tags"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -115,9 +114,9 @@ func (s *ScrapingService) scrapeIndividualGame(appID uint32) error {
 	}
 
 	// convert and save tags
-	tags := SteamTagsToGameTags(gameDetails, game.ID, steamspyData)
-	if len(tags) > 0 {
-		if err := tx.CreateInBatches(tags, 10).Error; err != nil {
+	gameTags := SteamTagsToGameTags(gameDetails, game.ID, steamspyData)
+	if len(gameTags) > 0 {
+		if err := tx.CreateInBatches(gameTags, 10).Error; err != nil {
 			tx.Rollback()
 			return fmt.Errorf("failed to save tags: %w", err)
 		}
@@ -129,8 +128,8 @@ func (s *ScrapingService) scrapeIndividualGame(appID uint32) error {
 	}
 
 	// normalize tag weights after transaction is committed
-	if len(tags) > 0 {
-		algorithm.CreateBaseTagWeights(uint32(game.ID))
+	if len(gameTags) > 0 {
+		tags.CreateBaseTagWeights(uint32(game.ID))
 	}
 
 	return nil
