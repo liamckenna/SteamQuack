@@ -48,6 +48,14 @@ func profileParseHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	visibility := playerSummary.Visibility
+
+	if visibility != 3 {
+		w.WriteHeader(http.StatusInternalServerError)
+		_ = json.NewEncoder(w).Encode(map[string]string{"error": "Private profile!"})
+		return
+	}
+
 	ownedGames, err := steamService.GetUserOwnedGames(steamID)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

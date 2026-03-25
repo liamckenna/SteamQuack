@@ -17,14 +17,15 @@ export async function parseProfile(profile: string): Promise<ProfileResult> {
   });
 
   // backend uses 404 for not_found, but still returns JSON
-  const data = (await res.json()) as ProfileResult;
+  const data = await res.json();
 
   // If it's a non-404 error, throw so UI can show a real error state
   if (!res.ok && res.status !== 404) {
-    throw new Error(`parseProfile failed: ${res.status}`);
+    const errorMessage = data.error ? data.error : `parseProfile failed: ${res.status}`;
+    throw new Error(errorMessage);
   }
 
-  return data;
+  return data as ProfileResult;
 }
 
 export type RecommendationRequest = {

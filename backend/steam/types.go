@@ -77,6 +77,7 @@ type SteamPlayerSummary struct {
 	Avatar       string `json:"avatar"`
 	AvatarMedium string `json:"avatarmedium"`
 	AvatarFull   string `json:"avatarfull"`
+	Visibility   int    `json:"communityvisibilitystate"`
 }
 
 type SteamOwnedGamesResponse struct {
