@@ -26,29 +26,29 @@ func NewAPIClient(apiKey string) *APIClient {
 }
 
 // fetches all Steam apps
-func (c *APIClient) FetchAppList() (*SteamAppListResponse, error) {
+func (c *APIClient) FetchAppList(lastAppId int) (*SteamAppListResponse, int, error) {
 	<-c.rateLimiter.C // Wait for rate limit
 
-	url := fmt.Sprintf("https://api.steampowered.com/IStoreService/GetAppList/v1/?key=%s&max_results=50000&last_appid=0", c.apiKey)
+	url := fmt.Sprintf("https://api.steampowered.com/IStoreService/GetAppList/v1/?key=%s&max_results=50000&last_appid=%d", c.apiKey, lastAppId)
 
 	log.Printf("Fetching app list from: %s", url)
 	resp, err := c.httpClient.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch app list: %w", err)
+		return nil, 0, fmt.Errorf("failed to fetch app list: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("API returned status %d", resp.StatusCode)
+		return nil, 0, fmt.Errorf("API returned status %d", resp.StatusCode)
 	}
 
 	var appList SteamAppListResponse
 	if err := json.NewDecoder(resp.Body).Decode(&appList); err != nil {
-		return nil, fmt.Errorf("failed to decode app list: %w", err)
+		return nil, 0, fmt.Errorf("failed to decode app list: %w", err)
 	}
 
 	log.Printf("Fetched %d apps from Steam API", len(appList.Response.Apps))
-	return &appList, nil
+	return &appList, int(appList.Response.Apps[len(appList.Response.Apps)-1].AppID), nil
 }
 
 // fetches detailed information for a specific game
@@ -103,6 +103,56 @@ func (c *APIClient) FetchSteamSpyData(appID uint32) (*SteamSpyAppDetails, error)
 	}
 
 	return &spyData, nil
+}
+
+// fetches player summary
+func (c *APIClient) FetchPlayerSummary(steamID string) (*SteamPlayerSummary, error) {
+	url := fmt.Sprintf("http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=%s&steamids=%s",
+		c.apiKey, steamID)
+
+	resp, err := c.httpClient.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch player summary: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("Steam API returned status %d", resp.StatusCode)
+	}
+
+	var summaryResp SteamPlayerSummaryResponse
+	if err := json.NewDecoder(resp.Body).Decode(&summaryResp); err != nil {
+		return nil, fmt.Errorf("failed to decode player summary response: %w", err)
+	}
+
+	if len(summaryResp.Response.Players) == 0 {
+		return nil, fmt.Errorf("no player data found for Steam ID: %s", steamID)
+	}
+
+	return &summaryResp.Response.Players[0], nil
+}
+
+// fetches games owned by a given player
+func (c *APIClient) FetchOwnedGames(steamID string) (*SteamOwnedGamesResponse, error) {
+	url := fmt.Sprintf("http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=%s&steamid=%s&format=json&include_appinfo=true&include_played_free_games=1",
+		c.apiKey, steamID)
+
+	resp, err := c.httpClient.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch owned games: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("Steam API returned status %d", resp.StatusCode)
+	}
+
+	var gamesResp SteamOwnedGamesResponse
+	if err := json.NewDecoder(resp.Body).Decode(&gamesResp); err != nil {
+		return nil, fmt.Errorf("failed to decode owned games response: %w", err)
+	}
+
+	return &gamesResp, nil
 }
 
 // cleans up the rate limiter

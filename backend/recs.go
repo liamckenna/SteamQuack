@@ -3,6 +3,10 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"steamquack/backend/algorithm"
+	"steamquack/backend/config"
+	"steamquack/backend/database"
+	"steamquack/backend/steam"
 )
 
 type RecommendationRequest struct {
@@ -11,10 +15,9 @@ type RecommendationRequest struct {
 }
 
 type Recommendation struct {
-	Title  string `json:"title"`
-	Reason string `json:"reason"`
+	GameID uint32  `json:"game_id"`
+	Score  float64 `json:"score"`
 }
-
 
 type RecommendationResponse struct {
 	Recommendations []Recommendation `json:"recommendations"`
@@ -30,13 +33,29 @@ func recommendationsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//dummy recommendations
+	steamID := req.Profile
+	//error testing here
+
+	cfg := config.LoadConfig()
+	db := database.GetDB()
+	steamService := steam.NewScrapingService(cfg, db)
+
+	userTasteProfile := algorithm.CreateTasteProfile(steamService, steamID)
+
+	topGames := algorithm.CreateRecommendations(steamService, userTasteProfile, req.Settings)
+
+	recommendations := make([]Recommendation, 0, len(topGames))
+	for _, gameScore := range topGames {
+		recommendations = append(recommendations, Recommendation{
+			GameID: gameScore.GameID,
+			Score:  gameScore.Score,
+		})
+	}
 	resp := RecommendationResponse{
-		Recommendations: []Recommendation{
-			{Title: "[game 1]", Reason: "[reason]"},
-			{Title: "\n[game 2]", Reason: "[reason]" + "[" + req.Profile + "]"},
-		},
+		Recommendations: recommendations,
 	}
 
 	_ = json.NewEncoder(w).Encode(resp)
+
+	steamService.Close()
 }

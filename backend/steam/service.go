@@ -3,11 +3,10 @@ package steam
 import (
 	"fmt"
 	"log"
-	"time"
-
-	"steamquack/backend/algorithm"
 	"steamquack/backend/config"
 	"steamquack/backend/models"
+	"steamquack/backend/tags"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -29,11 +28,11 @@ func NewScrapingService(cfg *config.Config, db *gorm.DB) *ScrapingService {
 }
 
 // scrapes game data from Steam
-func (s *ScrapingService) ScrapeGameData(maxGames int) error {
+func (s *ScrapingService) ScrapeGameData(maxGames int, nextLastAppId int) error {
 	log.Printf("Starting Steam game data scraping (max %d games)", maxGames)
 
 	// gets list of all apps
-	appList, err := s.client.FetchAppList()
+	appList, returnedLastAppId, err := s.client.FetchAppList(nextLastAppId)
 	if err != nil {
 		return fmt.Errorf("failed to fetch app list: %w", err)
 	}
@@ -74,7 +73,7 @@ func (s *ScrapingService) ScrapeGameData(maxGames int) error {
 		time.Sleep(2 * time.Second)
 	}
 
-	log.Printf("Scraping complete! Processed: %d", processed)
+	log.Printf("Scraping complete! Processed: %d (next batch starts at app %d)", processed, returnedLastAppId)
 	return nil
 }
 
@@ -115,9 +114,9 @@ func (s *ScrapingService) scrapeIndividualGame(appID uint32) error {
 	}
 
 	// convert and save tags
-	tags := SteamTagsToGameTags(gameDetails, game.ID, steamspyData)
-	if len(tags) > 0 {
-		if err := tx.CreateInBatches(tags, 10).Error; err != nil {
+	gameTags := SteamTagsToGameTags(gameDetails, game.ID, steamspyData)
+	if len(gameTags) > 0 {
+		if err := tx.CreateInBatches(gameTags, 10).Error; err != nil {
 			tx.Rollback()
 			return fmt.Errorf("failed to save tags: %w", err)
 		}
@@ -129,8 +128,8 @@ func (s *ScrapingService) scrapeIndividualGame(appID uint32) error {
 	}
 
 	// normalize tag weights after transaction is committed
-	if len(tags) > 0 {
-		algorithm.CreateBaseTagWeights(uint32(game.ID))
+	if len(gameTags) > 0 {
+		tags.CreateBaseTagWeights(uint32(game.ID))
 	}
 
 	return nil
@@ -179,6 +178,16 @@ func (s *ScrapingService) GetScrapingStats() (map[string]interface{}, error) {
 	stats["latest_game_added"] = latestGame.CreatedAt
 
 	return stats, nil
+}
+
+// fetches a user's profile information
+func (s *ScrapingService) GetUserProfile(steamID string) (*SteamPlayerSummary, error) {
+	return s.client.FetchPlayerSummary(steamID)
+}
+
+// fetches a user's owned games by playtime
+func (s *ScrapingService) GetUserOwnedGames(steamID string) (*SteamOwnedGamesResponse, error) {
+	return s.client.FetchOwnedGames(steamID)
 }
 
 // clean up
