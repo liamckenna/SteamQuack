@@ -12,7 +12,7 @@ func SteamToGameModel(steamGame *SteamGameDetails, appID uint32) *models.Game {
 	game := &models.Game{
 		AppID:       appID,
 		Name:        steamGame.Name,
-		Description: steamGame.DetailedDescription,
+		Description: steamGame.ShortDescription,
 	}
 
 	// handles release date

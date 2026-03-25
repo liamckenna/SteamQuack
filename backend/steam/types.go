@@ -30,13 +30,13 @@ type SteamGameDetailsWrapper struct {
 }
 
 type SteamGameDetails struct {
-	Type                string           `json:"type"` // filter for game vs dlc
-	Name                string           `json:"name"`
-	DetailedDescription string           `json:"detailed_description"`
-	PriceOverview       *SteamPriceInfo  `json:"price_overview"` // For InitialPrice/CurrentPrice
-	ReleaseDate         SteamReleaseDate `json:"release_date"`   // For ReleaseDate
-	Categories          []SteamCategory  `json:"categories"`     // For GameTag table
-	Genres              []SteamGenre     `json:"genres"`         // For GameTag table
+	Type             string           `json:"type"` // filter for game vs dlc
+	Name             string           `json:"name"`
+	ShortDescription string           `json:"short_description"`
+	PriceOverview    *SteamPriceInfo  `json:"price_overview"` // For InitialPrice/CurrentPrice
+	ReleaseDate      SteamReleaseDate `json:"release_date"`   // For ReleaseDate
+	Categories       []SteamCategory  `json:"categories"`     // For GameTag table
+	Genres           []SteamGenre     `json:"genres"`         // For GameTag table
 }
 
 type SteamPriceInfo struct {
