@@ -111,6 +111,21 @@ func SteamSpyPageToGameModel(spyGame *SteamSpyPageGame) *models.Game {
 	return game
 }
 
+// updates an existing game model with detailed Steam API data
+func UpdateGameWithSteamDetails(game *models.Game, steamGame *SteamGameDetails) {
+	game.Description = steamGame.ShortDescription
+
+	if steamGame.ReleaseDate.Date != "" {
+		if parsedDate, err := time.Parse("Jan 2, 2006", steamGame.ReleaseDate.Date); err == nil {
+			game.ReleaseDate = parsedDate
+			game.ReleaseDateUnix = parsedDate.Unix()
+		} else if parsedDate, err := time.Parse("2006", steamGame.ReleaseDate.Date); err == nil {
+			game.ReleaseDate = parsedDate
+			game.ReleaseDateUnix = parsedDate.Unix()
+		}
+	}
+}
+
 // converts string app ID to uint32
 func ParseAppIDFromString(appIDStr string) (uint32, error) {
 	parsed, err := strconv.ParseUint(appIDStr, 10, 32)

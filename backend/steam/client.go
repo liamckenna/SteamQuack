@@ -22,7 +22,7 @@ func NewAPIClient(apiKey string) *APIClient {
 			Timeout: 30 * time.Second,
 		},
 		apiKey:      apiKey,
-		rateLimiter: time.NewTicker(3 * time.Second), // 3 seconds between requests
+		rateLimiter: time.NewTicker(2 * time.Second), // 2 seconds between requests
 	}
 }
 

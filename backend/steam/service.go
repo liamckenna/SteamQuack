@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type ScrapingService struct {
@@ -53,12 +54,6 @@ func (s *ScrapingService) ScrapeBatchGameData() error {
 				continue
 			}
 
-			// Check if database already has this game
-			var existingGame models.Game
-			if err := s.db.Where("app_id = ?", spyGame.AppID).First(&existingGame).Error; err == nil {
-				continue // Skip existing games
-			}
-
 			// Pass a copy of the struct to avoid pointer issues in the loop
 			gameCopy := spyGame
 			if err := s.processIndividualGame(&gameCopy); err != nil {
@@ -80,24 +75,76 @@ func (s *ScrapingService) ScrapeBatchGameData() error {
 
 // handles saving an individual game fetched from the batch process
 func (s *ScrapingService) processIndividualGame(spyGame *SteamSpyPageGame) error {
-	// Start database transaction
-	tx := s.db.Begin()
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-		}
-	}()
-
 	// Convert to model
 	game := SteamSpyPageToGameModel(spyGame)
 
-	if err := tx.Create(game).Error; err != nil {
-		tx.Rollback()
-		return fmt.Errorf("failed to save game: %w", err)
+	// Upsert the game using AppID as the unique conflict key
+	err := s.db.Clauses(clause.OnConflict{
+		Columns: []clause.Column{{Name: "app_id"}},
+		DoUpdates: clause.AssignmentColumns([]string{
+			"name",
+			"initial_price",
+			"current_price",
+			"review_count",
+			"review_percentage",
+			"updated_at",
+		}),
+	}).Create(game).Error
+
+	if err != nil {
+		return fmt.Errorf("failed to upsert game %d: %w", spyGame.AppID, err)
 	}
 
-	if err := tx.Commit().Error; err != nil {
-		return fmt.Errorf("failed to commit transaction: %w", err)
+	return nil
+}
+
+// fetches descriptions, release dates, and tags for new games
+func (s *ScrapingService) UpdateNewGameDetails() error {
+	// Determine the start of the current day to filter new entries
+	now := time.Now()
+	startOfDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+
+	var newGames []models.Game
+	if err := s.db.Where("created_at >= ?", startOfDay).Find(&newGames).Error; err != nil {
+		return fmt.Errorf("failed to fetch new games: %w", err)
+	}
+
+	log.Printf("Found %d new games added today. Fetching detailed data...", len(newGames))
+
+	for i, game := range newGames {
+		log.Printf("Fetching details for new game %d/%d: %s", i+1, len(newGames), game.Name)
+
+		// 1. Fetch Steam details for description & release date
+		gameDetails, err := s.client.FetchGameDetails(game.AppID)
+		if err != nil {
+			log.Printf("Warning: Failed to fetch Steam details for %d: %v", game.AppID, err)
+		} else if gameDetails != nil {
+			UpdateGameWithSteamDetails(&game, gameDetails)
+			s.db.Save(&game) // Update the record in the database
+		}
+
+		// 2. Fetch SteamSpy tags
+		steamspyData, err := s.client.FetchSteamSpyData(game.AppID)
+		if err != nil {
+			log.Printf("Warning: SteamSpy tags unavailable for app %d: %v", game.AppID, err)
+			steamspyData = nil
+		}
+
+		// 3. Convert and save tags
+		var gameTags []models.GameTag
+		if gameDetails != nil {
+			gameTags = SteamTagsToGameTags(gameDetails, game.ID, steamspyData)
+		} else if steamspyData != nil {
+			gameTags = SteamTagsToGameTags(&SteamGameDetails{}, game.ID, steamspyData)
+		}
+
+		if len(gameTags) > 0 {
+			if err := s.db.CreateInBatches(gameTags, 10).Error; err != nil {
+				log.Printf("Error saving tags for %d: %v", game.AppID, err)
+			} else {
+				tags.CreateBaseTagWeights(uint32(game.ID))
+			}
+		}
 	}
 
 	return nil

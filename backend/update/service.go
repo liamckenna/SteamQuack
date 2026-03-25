@@ -2,7 +2,6 @@ package update
 
 import (
 	"log"
-	"steamquack/backend/models"
 	"steamquack/backend/steam"
 
 	"gorm.io/gorm"
@@ -21,23 +20,23 @@ func NewUpdateService(scrapingService *steam.ScrapingService, db *gorm.DB) *Upda
 	}
 }
 
-// updates games and tag data
+// updates existing games and fetches detailed data for new games
 func (u *UpdateService) UpdateDatabase() error {
 	log.Println("Starting database update process...")
 
-	log.Println("Clearing existing games...")
-	if err := u.db.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&models.Game{}).Error; err != nil {
+	// Phase 1: Fetch batch data (Updates existing games, inserts base data for new games)
+	log.Println("Phase 1: Fetching and upserting batch data from SteamSpy...")
+	if err := u.scrapingService.ScrapeBatchGameData(); err != nil {
+		log.Printf("Error during batch scrape: %v\n", err)
 		return err
 	}
 
-	log.Println("Initiating Steam scrape...")
-	err := u.scrapingService.ScrapeBatchGameData()
-	if err != nil {
-		log.Printf("Error during database update: %v\n", err)
+	// Phase 2: Fetch Steam details and tags ONLY for games created today
+	log.Println("Phase 2: Fetching detailed descriptions and tags for newly added games...")
+	if err := u.scrapingService.UpdateNewGameDetails(); err != nil {
+		log.Printf("Error updating details for new games: %v\n", err)
 		return err
 	}
-
-	// TODO: add description, release date, and tag data for new games
 
 	log.Println("Database update completed successfully.")
 	return nil
