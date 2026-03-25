@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -120,6 +121,11 @@ func (c *APIClient) FetchSteamSpyPage(page int) (SteamSpyPageResponse, error) {
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("SteamSpy API returned status %d for page %d", resp.StatusCode, page)
+	}
+
+	contentType := resp.Header.Get("Content-Type")
+	if !strings.Contains(contentType, "application/json") {
+		return nil, fmt.Errorf("SteamSpy API returned non-JSON response for page %d", page)
 	}
 
 	var pageData SteamSpyPageResponse
