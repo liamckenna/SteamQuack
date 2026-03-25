@@ -26,9 +26,8 @@ func main() {
 	// set up DB update scheduler
 	updateService := update.NewUpdateService(steamService, db)
 	scheduler := update.NewScheduler(updateService)
-	_ = scheduler
-	//scheduler.Start()
-	//defer scheduler.Stop()
+	scheduler.Start()
+	defer scheduler.Stop()
 
 	// set up API routes
 	r := mux.NewRouter()

@@ -105,6 +105,31 @@ func (c *APIClient) FetchSteamSpyData(appID uint32) (*SteamSpyAppDetails, error)
 	return &spyData, nil
 }
 
+// fetches a dictionary of 1000 games from a specific SteamSpy page
+func (c *APIClient) FetchSteamSpyPage(page int) (SteamSpyPageResponse, error) {
+	<-c.rateLimiter.C // Respect base client rate limit
+
+	url := fmt.Sprintf("https://steamspy.com/api.php?request=all&page=%d", page)
+	log.Printf("Fetching SteamSpy page %d: %s", page, url)
+
+	resp, err := c.httpClient.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch SteamSpy page %d: %w", page, err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("SteamSpy API returned status %d for page %d", resp.StatusCode, page)
+	}
+
+	var pageData SteamSpyPageResponse
+	if err := json.NewDecoder(resp.Body).Decode(&pageData); err != nil {
+		return nil, fmt.Errorf("failed to decode SteamSpy page %d: %w", page, err)
+	}
+
+	return pageData, nil
+}
+
 // fetches player summary
 func (c *APIClient) FetchPlayerSummary(steamID string) (*SteamPlayerSummary, error) {
 	url := fmt.Sprintf("http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=%s&steamids=%s",

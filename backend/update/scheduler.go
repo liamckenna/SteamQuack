@@ -32,9 +32,9 @@ func NewScheduler(updateService *UpdateService) *Scheduler {
 func (s *Scheduler) Start() {
 	// cron expression: Minute 0, Hour 5, Any Day, Any Month, Day of Week 1 (Monday)
 	_, err := s.cron.AddFunc("0 5 * * 1", func() {
-		log.Println("Scheduled task triggered: Regenerating database")
-		if err := s.updateService.RegenerateDatabase(); err != nil {
-			log.Printf("Scheduled regeneration failed: %v", err)
+		log.Println("Scheduled task triggered: Updating database")
+		if err := s.updateService.UpdateDatabase(); err != nil {
+			log.Printf("Scheduled update failed: %v", err)
 		}
 	})
 

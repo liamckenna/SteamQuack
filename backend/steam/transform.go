@@ -86,6 +86,31 @@ func SteamTagsToGameTags(steamGame *SteamGameDetails, gameID uint, steamspyData 
 	return tags
 }
 
+// converts SteamSpy page game to the database model
+func SteamSpyPageToGameModel(spyGame *SteamSpyPageGame) *models.Game {
+	game := &models.Game{
+		AppID: spyGame.AppID,
+		Name:  spyGame.Name,
+	}
+
+	// Calculate reviews
+	totalReviews := spyGame.Positive + spyGame.Negative
+	game.ReviewCount = totalReviews
+	if totalReviews > 0 {
+		game.ReviewPercentage = (float64(spyGame.Positive) / float64(totalReviews)) * 100.0
+	}
+
+	// Parse prices (convert from string cents to float dollars)
+	if initialPrice, err := strconv.ParseFloat(spyGame.InitialPrice, 64); err == nil {
+		game.InitialPrice = initialPrice / 100.0
+	}
+	if currentPrice, err := strconv.ParseFloat(spyGame.Price, 64); err == nil {
+		game.CurrentPrice = currentPrice / 100.0
+	}
+
+	return game
+}
+
 // converts string app ID to uint32
 func ParseAppIDFromString(appIDStr string) (uint32, error) {
 	parsed, err := strconv.ParseUint(appIDStr, 10, 32)

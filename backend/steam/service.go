@@ -27,6 +27,82 @@ func NewScrapingService(cfg *config.Config, db *gorm.DB) *ScrapingService {
 	}
 }
 
+// scrapes batch game data from SteamSpy paginated endpoint
+func (s *ScrapingService) ScrapeBatchGameData() error {
+	log.Println("Starting batch game data scraping from SteamSpy...")
+	page := 0
+
+	for {
+		log.Printf("Fetching SteamSpy page %d...", page)
+
+		pageData, err := s.client.FetchSteamSpyPage(page)
+		if err != nil {
+			log.Printf("Stopping batch scrape: error fetching page %d: %v", page, err)
+			break
+		}
+
+		// Stop if the page has no games
+		if len(pageData) == 0 {
+			log.Printf("No games found on page %d. Batch scraping complete.", page)
+			break
+		}
+
+		processed := 0
+		for _, spyGame := range pageData {
+			if spyGame.Name == "" {
+				continue
+			}
+
+			// Check if database already has this game
+			var existingGame models.Game
+			if err := s.db.Where("app_id = ?", spyGame.AppID).First(&existingGame).Error; err == nil {
+				continue // Skip existing games
+			}
+
+			// Pass a copy of the struct to avoid pointer issues in the loop
+			gameCopy := spyGame
+			if err := s.processIndividualGame(&gameCopy); err != nil {
+				log.Printf("Error scraping game %d (%s): %v", spyGame.AppID, spyGame.Name, err)
+			}
+
+			processed++
+		}
+
+		log.Printf("Processed %d new games from page %d", processed, page)
+		page++
+
+		log.Println("Waiting 60 seconds before fetching the next page to respect rate limits...")
+		time.Sleep(60 * time.Second)
+	}
+
+	return nil
+}
+
+// handles saving an individual game fetched from the batch process
+func (s *ScrapingService) processIndividualGame(spyGame *SteamSpyPageGame) error {
+	// Start database transaction
+	tx := s.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// Convert to model
+	game := SteamSpyPageToGameModel(spyGame)
+
+	if err := tx.Create(game).Error; err != nil {
+		tx.Rollback()
+		return fmt.Errorf("failed to save game: %w", err)
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return nil
+}
+
 // scrapes game data from Steam
 func (s *ScrapingService) ScrapeGameData(maxGames int, nextLastAppId int) error {
 	log.Printf("Starting Steam game data scraping (max %d games)", maxGames)

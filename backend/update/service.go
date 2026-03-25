@@ -13,7 +13,7 @@ type UpdateService struct {
 	db              *gorm.DB
 }
 
-// creates a new database regeneration process
+// creates a new database update service
 func NewUpdateService(scrapingService *steam.ScrapingService, db *gorm.DB) *UpdateService {
 	return &UpdateService{
 		scrapingService: scrapingService,
@@ -21,28 +21,24 @@ func NewUpdateService(scrapingService *steam.ScrapingService, db *gorm.DB) *Upda
 	}
 }
 
-// clears existing entries and re-scrapes the Steam data
-func (u *UpdateService) RegenerateDatabase() error {
-	log.Println("Starting database regeneration process...")
-
-	log.Println("Clearing existing game tags...")
-	if err := u.db.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&models.GameTag{}).Error; err != nil {
-		return err
-	}
+// updates games and tag data
+func (u *UpdateService) UpdateDatabase() error {
+	log.Println("Starting database update process...")
 
 	log.Println("Clearing existing games...")
 	if err := u.db.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&models.Game{}).Error; err != nil {
 		return err
 	}
 
-	// fetch up to 150,000 games to ensure we cover the entire Steam catalog
 	log.Println("Initiating Steam scrape...")
-	err := u.scrapingService.ScrapeGameData(150000)
+	err := u.scrapingService.ScrapeBatchGameData()
 	if err != nil {
-		log.Printf("Error during database regeneration: %v\n", err)
+		log.Printf("Error during database update: %v\n", err)
 		return err
 	}
 
-	log.Println("Database regeneration completed successfully.")
+	// TODO: add description, release date, and tag data for new games
+
+	log.Println("Database update completed successfully.")
 	return nil
 }

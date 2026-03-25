@@ -1,5 +1,10 @@
 package steam
 
+import (
+	"strconv"
+	"strings"
+)
+
 // App List API struct
 type SteamAppListResponse struct {
 	Response struct {
@@ -62,6 +67,58 @@ type SteamSpyAppDetails struct {
 	Players2W       int            `json:"players_2weeks"`
 	AveragePlaytime int            `json:"average_playtime"` // in minutes
 	MedianPlaytime  int            `json:"median_playtime"`  // in minutes
+}
+
+// NullableInt represents an int that can be null or an empty string in JSON
+type NullableInt int
+
+// UnmarshalJSON implements the json.Unmarshaler interface
+func (i *NullableInt) UnmarshalJSON(data []byte) error {
+	s := strings.TrimSpace(string(data))
+	if s == "" || s == "null" {
+		*i = 0
+		return nil
+	}
+
+	// If it's a quoted string, unquote it
+	if strings.HasPrefix(s, `"`) && strings.HasSuffix(s, `"`) {
+		s = s[1 : len(s)-1]
+		if s == "" {
+			*i = 0
+			return nil
+		}
+	}
+
+	// Try to parse as an integer
+	val, err := strconv.Atoi(s)
+	if err != nil {
+		return err
+	}
+	*i = NullableInt(val)
+	return nil
+}
+
+// SteamSpy Batch API structs
+type SteamSpyPageResponse map[string]SteamSpyPageGame
+
+type SteamSpyPageGame struct {
+	AppID          uint32      `json:"appid"`
+	Name           string      `json:"name"`
+	Developer      string      `json:"developer"`
+	Publisher      string      `json:"publisher"`
+	ScoreRank      NullableInt `json:"score_rank"`
+	Positive       int         `json:"positive"`
+	Negative       int         `json:"negative"`
+	Userscore      int         `json:"userscore"`
+	Owners         string      `json:"owners"`
+	AverageForever int         `json:"average_forever"`
+	Average2Weeks  int         `json:"average_2weeks"`
+	MedianForever  int         `json:"median_forever"`
+	Median2Weeks   int         `json:"median_2weeks"`
+	Price          string      `json:"price"`        // Returned as string cents
+	InitialPrice   string      `json:"initialprice"` // Returned as string cents
+	Discount       string      `json:"discount"`
+	CCU            int         `json:"ccu"`
 }
 
 type SteamPlayerSummaryResponse struct {
