@@ -17,6 +17,7 @@ type RecommendationRequest struct {
 type Recommendation struct {
 	GameID uint32  `json:"game_id"`
 	Score  float64 `json:"score"`
+	Name   string  `json:"name"`
 }
 
 type RecommendationResponse struct {
@@ -40,15 +41,29 @@ func recommendationsHandler(w http.ResponseWriter, r *http.Request) {
 	db := database.GetDB()
 	steamService := steam.NewScrapingService(cfg, db)
 
+	ownedGames, err2 := steamService.GetUserOwnedGames(steamID)
+	if err2 != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		_ = json.NewEncoder(w).Encode(map[string]string{"error": "failed to fetch owned games"})
+		return
+	}
+
+	excludedGames := make([]uint32, 0, len(ownedGames.Response.Games))
+
+	for game := range ownedGames.Response.Games {
+		excludedGames = append(excludedGames, ownedGames.Response.Games[game].AppID)
+	}
+
 	userTasteProfile := algorithm.CreateTasteProfile(steamService, steamID)
 
-	topGames := algorithm.CreateRecommendations(steamService, userTasteProfile, req.Settings)
+	topGames := algorithm.CreateRecommendations(steamService, userTasteProfile, excludedGames, req.Settings)
 
 	recommendations := make([]Recommendation, 0, len(topGames))
 	for _, gameScore := range topGames {
 		recommendations = append(recommendations, Recommendation{
 			GameID: gameScore.GameID,
 			Score:  gameScore.Score,
+			Name:   gameScore.Name,
 		})
 	}
 	resp := RecommendationResponse{

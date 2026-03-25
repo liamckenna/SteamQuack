@@ -12,15 +12,16 @@ import (
 type GameScore struct {
 	GameID uint32
 	Score  float64
+	Name   string
 }
 
-func CreateRecommendations(steamService *steam.ScrapingService, tasteProfile map[string]float64, settings map[string]any) []GameScore {
+func CreateRecommendations(steamService *steam.ScrapingService, tasteProfile map[string]float64, excludedApps []uint32, settings map[string]any) []GameScore {
 
 	db := database.GetDB()
 
 	var allGames []models.Game
 
-	gameScores := make(map[uint32]float64)
+	gameScores := make(map[uint32]GameScore, len(allGames))
 
 	result := db.Preload("Tags").Find(&allGames)
 
@@ -31,22 +32,44 @@ func CreateRecommendations(steamService *steam.ScrapingService, tasteProfile map
 
 	for _, game := range allGames {
 		score := 0.0
+		excluded := false
+		for app := range excludedApps {
+			if excludedApps[app] == game.AppID {
+				gameScores[game.AppID] = GameScore{
+					GameID: game.AppID,
+					Score:  score,
+					Name:   game.Name,
+				}
+				excluded = true
+				break
+			}
+		}
+		if excluded {
+			continue
+		}
 
 		for _, tag := range game.Tags {
-			score += tasteProfile[tag.TagName] * tag.Weight
+			if tag.Weight > 0 {
+				score += tasteProfile[tag.TagName] * tag.Weight
+			}
 		}
 
 		//other factors here
 
-		gameScores[game.AppID] = score
+		gameScores[game.AppID] = GameScore{
+			GameID: game.AppID,
+			Score:  score,
+			Name:   game.Name,
+		}
 	}
 
 	sortedScores := make([]GameScore, 0, len(gameScores))
 
-	for id, score := range gameScores {
+	for id := range gameScores {
 		sortedScores = append(sortedScores, GameScore{
 			GameID: id,
-			Score:  score,
+			Score:  gameScores[id].Score,
+			Name:   gameScores[id].Name,
 		})
 	}
 
@@ -79,7 +102,10 @@ func CreateTasteProfile(steamService *steam.ScrapingService, profileURL string) 
 		gameTagWeights := tags.GetBaseTagWeights(gameID)
 		if playtime > 0 {
 			for tag, weight := range gameTagWeights {
-				userTagWeights[tag] += weight * float64(playtime)
+				if weight > 0 {
+					tagContribution := weight * float64(playtime)
+					userTagWeights[tag] += tagContribution
+				}
 			}
 		}
 	}

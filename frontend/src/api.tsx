@@ -34,8 +34,9 @@ export type RecommendationRequest = {
 };
 
 export type Recommendation = {
-  title: string;
-  reason: string;
+  game_id: number;
+  score: number;
+  name: string;
 };
 
 export type RecommendationResponse = {

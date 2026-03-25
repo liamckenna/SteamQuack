@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import RandomGameDisplay from "../Test/RandomGameDisplay.tsx";
 import { getRecommendations, parseProfile } from "../../api";
-import type { ProfileResult } from "../../api";
+import type { ProfileResult, Recommendation } from "../../api";
 import "./App.css";
 
 function App() {
@@ -15,7 +15,7 @@ function App() {
     const [settingsText, setSettingsText] = useState(
         JSON.stringify({ genres: ["rpg", "strategy"], maxPrice: 20 }, null, 2),
     );
-    const [recs, setRecs] = useState<{ title: string; reason: string }[]>([]);
+    const [recs, setRecs] = useState<Recommendation[]>([]);
     const [recsLoading, setRecsLoading] = useState(false);
     const [recsError, setRecsError] = useState<string | null>(null);
 
@@ -161,9 +161,9 @@ function App() {
                         {recs.map((r, idx) => (
                             <li key={idx} style={{ marginBottom: 8 }}>
                                 <div>
-                                    <strong>{r.title}</strong>
+                                    <strong>{r.name}</strong>
                                 </div>
-                                <div>{r.reason}</div>
+                                <div>Score: {r.score}</div>
                             </li>
                         ))}
                     </ul>

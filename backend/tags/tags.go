@@ -1,6 +1,7 @@
 package tags
 
 import (
+	"fmt"
 	"steamquack/backend/database"
 	"steamquack/backend/models"
 	"strings"
@@ -14,8 +15,13 @@ func GetBaseTagWeights(gameID uint32) map[string]float64 {
 	// add only if weight > 0.0
 	db := database.GetDB()
 	var gameTags []models.GameTag
-	result := db.Where("game_id = ?", gameID).Find(&gameTags)
+	var game models.Game
+	db.Where("app_id = ?", gameID).Find(&game)
+	real_gameID := game.ID
+
+	result := db.Where("game_id = ?", real_gameID).Find(&gameTags)
 	if result.Error != nil {
+		fmt.Printf("error!!! %e\n", result.Error)
 		return tagWeights
 	}
 
