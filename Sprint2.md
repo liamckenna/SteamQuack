@@ -57,3 +57,13 @@ http://localhost:8080/
 **Description:** Retrieves statistics about scraping progress such as the latest game scrapped and when it was added to the database and the total amount of games added to the database.
 
 ---
+
+## Backend Test Cases:
+
+**TestFetchPlayerSummary:** Tests FetchPlayerSummary scrapper function by verifying if the API call completes and the returned Steam ID matches the requested Steam ID.
+
+**TestFetchOwnedGames:** Tests FetchOwnedGames scrapper function by verifying if the API call completes and checks if the map of games returned matches a given user's list of games owned.
+
+**TestScrapeGameDataWithSpecificAppID:** Tests scrapping a game by a specific id by scrapping a given game to a test database and verifying if the App ID of the entry is correct and that the game was saved to the database. Also checks if scrapping the game if it already exists in the databse should fail.
+
+**TestScrapeGameDataMultipleGames:** Tests function for scraping multiple games by scraping 3 games from Steam and verifies if the exact number of games were scraped to the database.
