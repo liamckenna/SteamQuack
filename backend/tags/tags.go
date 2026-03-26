@@ -4,6 +4,8 @@ import (
 	"steamquack/backend/database"
 	"steamquack/backend/models"
 	"strings"
+
+	"gorm.io/gorm"
 )
 
 func GetBaseTagWeights(gameID uint32) map[string]float64 {
@@ -29,7 +31,7 @@ func GetBaseTagWeights(gameID uint32) map[string]float64 {
 
 }
 
-func CreateBaseTagWeights(gameID uint32) map[string]float64 {
+func CreateBaseTagWeights(db *gorm.DB, gameID uint32) map[string]float64 {
 
 	tagWeights := GetInitialTagWeights()
 
@@ -44,7 +46,6 @@ func CreateBaseTagWeights(gameID uint32) map[string]float64 {
 	}
 
 	//get game tags from steamspy api, assume map[string]uint32 of tag counts is returned called gameTagCounts
-	db := database.GetDB()
 	var gameTags []models.GameTag
 	result := db.Where("game_id = ?", gameID).Find(&gameTags)
 	if result.Error != nil {

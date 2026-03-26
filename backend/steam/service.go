@@ -142,7 +142,7 @@ func (s *ScrapingService) UpdateNewGameDetails() error {
 			if err := s.db.CreateInBatches(gameTags, 10).Error; err != nil {
 				log.Printf("Error saving tags for %d: %v", game.AppID, err)
 			} else {
-				tags.CreateBaseTagWeights(uint32(game.ID))
+				tags.CreateBaseTagWeights(s.db, uint32(game.ID))
 			}
 		}
 	}
@@ -252,7 +252,7 @@ func (s *ScrapingService) scrapeIndividualGame(appID uint32) error {
 
 	// normalize tag weights after transaction is committed
 	if len(gameTags) > 0 {
-		tags.CreateBaseTagWeights(uint32(game.ID))
+		tags.CreateBaseTagWeights(s.db, uint32(game.ID))
 	}
 
 	return nil
