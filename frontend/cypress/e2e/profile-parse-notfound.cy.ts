@@ -5,7 +5,7 @@ describe("Profile Parse - Not Found", () => {
     cy.contains("button", "Send").click();
 
     cy.contains("Error: failed to fetch user profile", {
-      timeout: 10000,
+      timeout: 1000,
     }).should("be.visible");
   });
 });
