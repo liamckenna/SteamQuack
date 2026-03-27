@@ -1,63 +1,53 @@
-As a developer, I want to retain all of the original sites features, so that it strictly improves upon and expands the original site.
+## Done:
+- As a back-end developer, I want a dedicated database, so that I can store up-to-date data on steam games.
+- As a back-end developer, I want to integrate my site with steam's public API, so that I can acquire game data and user play data.
+- As a front-end developer, I want a rest API to integrate with the back-end, so that I can send and receive data efficiently.
+- As a front-end developer, I want to format the main page dynamically such that the site remains a one-page application, to ease the burden of navigation for the user and consolidate the site's features.
+- As a front-end developer, I want a UI mockup of the main site page, so that I can have a reference for implementing the interface.
+- As a front-end developer, I want mock data that emulates the backend, so that I can test the site without relying on the backend.
+- As a user, I want the ability to get recommendations based on the games I play, so that my recommendations feel personalized.
 
-As a back-end developer, I want a dedicated database, so that I can store up-to-date data on steam games.
+## In progress:
+- As a back-end developer, I want to populate the dedicated database with steam game data, so that it isn't reliant on the steam API during regular use for game data.
+- As a back-end developer, I want the database to be self-updating, so that I do not have to manually and continuously update the game data.
+- As a user, I want the ability to simply paste my Steam profile URL or unique username to receive recommendations, so that I don't have to go through the process of logging in to steam with two factor authentication.
 
-As a back-end developer, I want to populate the dedicated database with steam game data, so that it isn't reliant on the steam API during regular use for game data.
+## Important:
+- As a front-end developer, I want components in the appropriate places as outlined by the mock UI reference, so that the stylized layout is still functional.
+- As a front-end developer, I want an animated character on screen at all times, to make the site visually dynamic and appealing to view.
+- As a user, I want to see the current price of recommended games and if they are on sale, so that I can know whether they are within my budget.
+- As a user, I want to access the steam store page of my recommended games, so that I can see them individually in more detail.
+- As a user, I want to be able to exclude some of my games from being used to calculate recommendations, so that games I no longer enjoy don't influence my recommendations.
+- As a user, I want the ability to filter my results by price range, user rating threshold, review count threshold, and recency threshold, so that I can ensure my recommendations meet my budget, are high quality, popular, and new, respectively.
+- As a user, I want my play habit data to be visualized, so that I can learn about them through a visual means.
+- As a user, I want to exclude games of a certain tag from being recommended to me, so that my recommendations reflect my current tastes.
+- As a user, I want to learn more about a specific game without leaving the site, so that I can quickly make decisions on what to purchase.
+- As a user, I don't want to be served 18+ games, as I may not be of age to see that.
 
-As a back-end developer, I want the database to be self-updating, so that I do not have to manually and continuously update the game data.
+## Nice to have:
+- As a new user, I want to be guided through the site intuitively, so that I understand the site's purpose and features.
+- As a user with a private steam profile, I want to be easily instructed on how to make my profile public, so that I don't have to look it up online.
+- As a user, I want the ability to find my account by logging in through the official steam API, so that I don't have to manually grab my profile URL and so that I can trust the website.
+- As a user, I want the ability to sort my results by price, user rating, review count, and recency, so that I can ensure my recommendations are budget-friendly, high quality, popular, and new, respectively.
+- As a user, I want the ability to give individual tags greater or less weight, so that I can receive recommendations based on specific tags. 
+- As a front-end developer, I want games that are on sale to have a visual indicator, so that they stand out to the viewer.
+- As a mobile user, I want the app to be easily usable from my phone's web browser, so that the experience feels the same regardless of where I am accessing the website.
+- As a user, I want to see trends and summarized data regarding the games I play, so that I can learn about my own play habits.
+- As a user, I want the ability to change how my recommendations are displayed to me, so that I can choose to fit more recommendations onto the screen or see them in higher visual quality.
 
-As a back-end developer, I want to integrate my site with steam's public API, so that I can acquire game data and user play data.
+## IDK:
+- As a developer, I want to retain all of the original sites features, so that it strictly improves upon and expands the original site.
+- As a front-end developer, I want to give the site personality, so that it stands out among other similar websites.
+- As a new user, I want to be hooked to use the site, so that I have an initial reason to stay on the app and choose it over other recommendation platforms.
+- As a user, I want the game recommendation pool to be up to date with the latest Steam games, so that I'm not missing out on any potential games.
 
-As a front-end developer, I want components in the appropriate places as outlined by the mock UI reference, so that the stylized layout is still functional.
 
-As a front-end developer, I want a rest API to integrate with the back-end, so that I can send and receive data efficiently.
+## This week:
+- Fill the database completely - Daniel
+- Make folder sign in page functional - Vishwa
+- Prescription page display (display recommendations on final page) - Daniel
+- Implement preferences into the algorithm (backend) - Liam
+- Preferences page display - Dylan
+- Properly store valid profile id (temporarily) - Liam
+- Look into official sign in button - Vishwa
 
-As a front-end developer, I want to format the main page dynamically such that the site remains a one-page application, to ease the burden of navigation for the user and consolidate the site's features.
-
-As a front-end developer, I want an animated character on screen at all times, to make the site visually dynamic and appealing to view.
-
-As a front-end developer, I want to give the site personality, so that it stands out among other similar websites.
-
-As a front-end developer, I want games that are on sale to have a visual indicator, so that they stand out to the viewer.
-
-As a front-end developer, I want a UI mockup of the main site page, so that I can have a reference for implementing the interface.
-
-As a front-end developer, I want mock data that emulates the backend, so that I can test the site without relying on the backend.
-
-As a mobile user, I want the app to be easily usable from my phone's web browser, so that the experience feels the same regardless of where I am accessing the website.
-
-As a new user, I want to be hooked to use the site, so that I have an initial reason to stay on the app and choose it over other recommendation platforms.
-
-As a new user, I want to be guided through the site intuitively, so that I understand the site's purpose and features.
-
-As a user with a private steam profile, I want to be easily instructed on how to make my profile public, so that I don't have to look it up online.
-
-As a user, I want to see the current price of recommended games and if they are on sale, so that I can know whether they are within my budget.
-
-As a user, I want to access the steam store page of my recommended games, so that I can see them individually in more detail.
-
-As a user, I want the game recommendation pool to be up to date with the latest Steam games, so that I'm not missing out on any potential games.
-
-As a user, I want the ability to get recommendations based on the games I play, so that my recommendations feel personalized.
-
-As a user, I want to be able to exclude some of my games from being used to calculate recommendations, so that games I no longer enjoy don't influence my recommendations.
-
-As a user, I want the ability to find my account by logging in through the official steam API, so that I don't have to manually grab my profile URL and so that I can trust the website.
-
-As a user, I want the ability to simply paste my Steam profile URL or unique username to receive recommendations, so that I don't have to go through the process of logging in to steam with two factor authentication.
-
-As a user, I want the ability to sort my results by price, user rating, review count, and recency, so that I can ensure my recommendations are budget-friendly, high quality, popular, and new, respectively.
-
-As a user, I want the ability to filter my results by price range, user rating threshold, review count threshold, and recency threshold, so that I can ensure my recommendations meet my budget, are high quality, popular, and new, respectively.
-
-As a user, I want to see trends and summarized data regarding the games I play, so that I can learn about my own play habits.
-
-As a user, I want my play habit data to be visualized, so that I can learn about them through a visual means.
-
-As a user, I want to exclude games of a certain tag from being recommended to me, so that my recommendations reflect my current tastes.
-
-As a user, I want the ability to give individual tags greater or less weight, so that I can receive recommendations based on specific tags. 
-
-As a user, I want the ability to change how my recommendations are displayed to me, so that I can choose to fit more recommendations onto the screen or see them in higher visual quality.
-
-As a user, I want to learn more about a specific game without leaving the site, so that I can quickly make decisions on what to purchase.
