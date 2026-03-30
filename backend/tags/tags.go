@@ -120,6 +120,25 @@ func GetAllTagCategories() []string {
 	}
 }
 
+// important weights that we need to play around with to improve the algorithm's overall output
+func GetTagCategoryWeights() map[string]float64 {
+	return map[string]float64{
+		"super-genre":         3.0,
+		"genre":               4.0,
+		"sub-genre":           4.0,
+		"visuals & viewpoint": 2.0,
+		"themes & moods":      2.0,
+		"features":            1.0,
+		"players":             1.0,
+		"other":               0.5,
+		"software":            1.0,
+		"assessments":         0.5,
+		"ratings":             0.2,
+		"hardware-input":      0.2,
+		"funding":             0.1,
+	}
+}
+
 func GetAllPossibleTags() map[string]string {
 
 	return map[string]string{
@@ -537,6 +556,39 @@ func GetAllPossibleTags() map[string]string {
 		"early access": "funding",
 		"free to play": "funding",
 		"kickstarter":  "funding",
+
+		//ADDED TAGS NOT INCLUDED IN THE DOCUMENTATION
+		"zombies":             "themes & moods",
+		"dark humor":          "themes & moods",
+		"puzzle-platformer":   "sub-genre",
+		"dwarf":               "themes & moods",
+		"base-building":       "features",
+		"rogue-like":          "sub-genre",
+		"rogue-lite":          "sub-genre",
+		"action rts":          "sub-genre",
+		"party game":          "sub-genre",
+		"dystopian":           "themes & moods",
+		"well-written":        "assessments",
+		"spaceships":          "themes & moods",
+		"parody":              "themes & moods",
+		"reboot":              "themes & moods",
+		"immersive":           "assessments",
+		"party":               "sub-genre",
+		"football (soccer)":   "genre",
+		"hentai":              "ratings",
+		"boomer shooter":      "sub-genre",
+		"football (american)": "genre",
+		"cooking":             "sub-genre",
+		"musou":               "sub-genre",
+		"jump scares":         "features",
+		"vikings":             "themes & moods",
+		"narrative":           "assessments",
+		"ambient":             "themes & moods",
+		"cricket":             "genre",
+		"electronic music":    "features",
+		"mahjong":             "genre",
+		"farming":             "sub-genre",
+		"escape room":         "features",
 	}
 }
 
@@ -956,5 +1008,39 @@ func GetInitialTagWeights() map[string]float64 {
 		"early access": 0.0,
 		"free to play": 0.0,
 		"kickstarter":  0.0,
+
+		//ADDED TAGS NOT INCLUDED IN THE DOCUMENTATION
+		"zombies":             0.0,
+		"dark humor":          0.0,
+		"puzzle-platformer":   0.0,
+		"dwarf":               0.0,
+		"base-building":       0.0,
+		"rogue-like":          0.0,
+		"rogue-lite":          0.0,
+		"action rts":          0.0,
+		"party game":          0.0,
+		"dystopian":           0.0,
+		"social deduction":    0.0,
+		"well-written":        0.0,
+		"spaceships":          0.0,
+		"parody":              0.0,
+		"reboot":              0.0,
+		"immersive":           0.0,
+		"party":               0.0,
+		"football (soccer)":   0.0,
+		"hentai":              0.0,
+		"boomer shooter":      0.0,
+		"football (american)": 0.0,
+		"cooking":             0.0,
+		"musou":               0.0,
+		"jump scares":         0.0,
+		"vikings":             0.0,
+		"narrative":           0.0,
+		"ambient":             0.0,
+		"cricket":             0.0,
+		"electronic music":    0.0,
+		"mahjong":             0.0,
+		"farming":             0.0,
+		"escape room":         0.0,
 	}
 }
