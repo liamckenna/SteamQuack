@@ -22,7 +22,7 @@ func NewAPIClient(apiKey string) *APIClient {
 			Timeout: 30 * time.Second,
 		},
 		apiKey:      apiKey,
-		rateLimiter: time.NewTicker(2 * time.Second), // 2 seconds between requests
+		rateLimiter: time.NewTicker(1500 * time.Millisecond), // 1.5 seconds between requests
 	}
 }
 
@@ -56,7 +56,7 @@ func (c *APIClient) FetchAppList(lastAppId int) (*SteamAppListResponse, int, err
 func (c *APIClient) FetchGameDetails(appID uint32) (*SteamGameDetails, error) {
 	<-c.rateLimiter.C // Wait for rate limit
 
-	url := fmt.Sprintf("https://store.steampowered.com/api/appdetails?appids=%d", appID)
+	url := fmt.Sprintf("https://store.steampowered.com/api/appdetails?appids=%d&l=english", appID)
 
 	resp, err := c.httpClient.Get(url)
 	if err != nil {

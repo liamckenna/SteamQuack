@@ -2,9 +2,11 @@ package steam
 
 import (
 	"strconv"
+	"strings"
 	"time"
 
 	"steamquack/backend/models"
+	"steamquack/backend/tags"
 )
 
 // converts Steam API game details to database model
@@ -111,19 +113,54 @@ func SteamSpyPageToGameModel(spyGame *SteamSpyPageGame) *models.Game {
 	return game
 }
 
-// updates an existing game model with detailed Steam API data
-func UpdateGameWithSteamDetails(game *models.Game, steamGame *SteamGameDetails) {
-	game.Description = steamGame.ShortDescription
+// updates an existing game model with detailed Steam API data (description, release date)
+func UpdateGameWithSteamDetails(game *models.Game, gameDetails *SteamGameDetails) {
+	game.Description = gameDetails.ShortDescription
 
-	if steamGame.ReleaseDate.Date != "" {
-		if parsedDate, err := time.Parse("Jan 2, 2006", steamGame.ReleaseDate.Date); err == nil {
+	if gameDetails.ReleaseDate.Date != "" {
+		if parsedDate, err := time.Parse("Jan 2, 2006", gameDetails.ReleaseDate.Date); err == nil {
 			game.ReleaseDate = parsedDate
 			game.ReleaseDateUnix = parsedDate.Unix()
-		} else if parsedDate, err := time.Parse("2006", steamGame.ReleaseDate.Date); err == nil {
+		} else if parsedDate, err := time.Parse("2 Jan, 2006", gameDetails.ReleaseDate.Date); err == nil {
+			game.ReleaseDate = parsedDate
+			game.ReleaseDateUnix = parsedDate.Unix()
+		} else if parsedDate, err := time.Parse("2006", gameDetails.ReleaseDate.Date); err == nil {
 			game.ReleaseDate = parsedDate
 			game.ReleaseDateUnix = parsedDate.Unix()
 		}
 	}
+}
+
+// updates an existing game model with SteamSpy API tag data
+func UpdateGameWithTagData(game *models.Game, gameDetails *SteamGameDetails, steamspyData *SteamSpyAppDetails) {
+	var gameTags []models.GameTag
+	allPossibleTags := tags.GetAllPossibleTags()
+
+	// add SteamSpy tags if present, otherwise fallback to Steam genres
+	if steamspyData != nil && len(steamspyData.Tags) > 0 {
+		for tagName, votes := range steamspyData.Tags {
+			if _, exists := allPossibleTags[strings.ToLower(tagName)]; exists {
+				gameTags = append(gameTags, models.GameTag{
+					GameID:  game.ID,
+					TagName: tagName,
+					Weight:  float64(votes),
+				})
+			}
+		}
+	} else if gameDetails != nil && len(gameDetails.Genres) > 0 {
+		for _, genre := range gameDetails.Genres {
+			if _, exists := allPossibleTags[strings.ToLower(genre.Description)]; exists {
+				gameTags = append(gameTags, models.GameTag{
+					GameID:  game.ID,
+					TagName: genre.Description,
+					Weight:  1.0,
+				})
+			}
+		}
+	}
+
+	// normalize and set tags
+	game.Tags = tags.NormalizeTagWeights(gameTags)
 }
 
 // converts string app ID to uint32

@@ -120,31 +120,17 @@ func (s *ScrapingService) UpdateNewGameDetails() error {
 			log.Printf("Warning: Failed to fetch Steam details for %d: %v", game.AppID, err)
 		} else if gameDetails != nil {
 			UpdateGameWithSteamDetails(&game, gameDetails)
-			s.db.Save(&game) // Update the record in the database
 		}
 
 		// 2. Fetch SteamSpy tags
 		steamspyData, err := s.client.FetchSteamSpyData(game.AppID)
 		if err != nil {
 			log.Printf("Warning: SteamSpy tags unavailable for app %d: %v", game.AppID, err)
-			steamspyData = nil
-		}
-
-		// 3. Convert and save tags
-		var gameTags []models.GameTag
-		if gameDetails != nil {
-			gameTags = SteamTagsToGameTags(gameDetails, game.ID, steamspyData)
 		} else if steamspyData != nil {
-			gameTags = SteamTagsToGameTags(&SteamGameDetails{}, game.ID, steamspyData)
+			UpdateGameWithTagData(&game, gameDetails, steamspyData)
 		}
 
-		if len(gameTags) > 0 {
-			if err := s.db.CreateInBatches(gameTags, 10).Error; err != nil {
-				log.Printf("Error saving tags for %d: %v", game.AppID, err)
-			} else {
-				tags.CreateBaseTagWeights(s.db, uint32(game.ID))
-			}
-		}
+		s.db.Save(&game) // Update the record in the database
 	}
 
 	return nil
@@ -236,8 +222,9 @@ func (s *ScrapingService) scrapeIndividualGame(appID uint32) error {
 		steamspyData = nil // will cause fallback to be used in transform function
 	}
 
-	// convert and save tags
+	// convert, normalize, and save tags
 	gameTags := SteamTagsToGameTags(gameDetails, game.ID, steamspyData)
+	gameTags = tags.NormalizeTagWeights(gameTags)
 	if len(gameTags) > 0 {
 		if err := tx.CreateInBatches(gameTags, 10).Error; err != nil {
 			tx.Rollback()
@@ -248,11 +235,6 @@ func (s *ScrapingService) scrapeIndividualGame(appID uint32) error {
 	// commit transaction
 	if err := tx.Commit().Error; err != nil {
 		return fmt.Errorf("failed to commit transaction: %w", err)
-	}
-
-	// normalize tag weights after transaction is committed
-	if len(gameTags) > 0 {
-		tags.CreateBaseTagWeights(s.db, uint32(game.ID))
 	}
 
 	return nil
