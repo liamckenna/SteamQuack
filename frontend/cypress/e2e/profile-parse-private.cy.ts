@@ -4,7 +4,7 @@ describe("Profile Parse - Private", () => {
     cy.get('input[placeholder*="private"]').clear().type("76561198151758695");
     cy.contains("button", "Send").click();
 
-    cy.contains("Error: Private profile!", { timeout: 10000 }).should(
+    cy.contains("Error: Private profile!", { timeout: 1000 }).should(
       "be.visible",
     );
   });
