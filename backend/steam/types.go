@@ -92,3 +92,19 @@ type SteamOwnedGame struct {
 	Name            string `json:"name"`
 	PlaytimeForever int    `json:"playtime_forever"` // in minutes
 }
+
+type Settings struct {
+	ExcludedTags            []string `json:"excluded_tags"`
+	ExcludedGames           []uint32 `json:"excluded_games"`
+	PrioritizedTags         []string `json:"prioritized_tags"`
+	PrioritizedGames        []uint32 `json:"prioritized_games"`
+	PrioritizeGamesOnSale   bool     `json:"prioritize_games_on_sale"`
+	PriceFloor              float64  `json:"price_floor"`
+	PriceCeiling            float64  `json:"price_ceiling"`
+	ReviewCountFloor        int      `json:"review_count_floor"`
+	ReviewCountCeiling      int      `json:"review_count_ceiling"`
+	ReviewPercentageFloor   float64  `json:"review_percentage_floor"`
+	ReviewPercentageCeiling float64  `json:"review_percentage_ceiling"`
+	ReleaseYearFloor        int      `json:"release_year_floor"`
+	ReleaseYearCeiling      int      `json:"release_year_ceiling"`
+}

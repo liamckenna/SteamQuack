@@ -2,16 +2,18 @@ package main
 
 import (
 	"encoding/json"
+	"math"
 	"net/http"
 	"steamquack/backend/algorithm"
 	"steamquack/backend/config"
 	"steamquack/backend/database"
 	"steamquack/backend/steam"
+	"time"
 )
 
 type RecommendationRequest struct {
 	Profile  string         `json:"profile"`
-	Settings map[string]any `json:"settings"`
+	Settings steam.Settings `json:"settings"`
 }
 
 type Recommendation struct {
@@ -48,15 +50,73 @@ func recommendationsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	excludedGames := make([]uint32, 0, len(ownedGames.Response.Games))
+	ownedGameIDs := make([]uint32, 0, len(ownedGames.Response.Games))
 
-	for game := range ownedGames.Response.Games {
-		excludedGames = append(excludedGames, ownedGames.Response.Games[game].AppID)
+	settings := steam.Settings{
+		ExcludedGames:           make([]uint32, 0),
+		ExcludedTags:            make([]string, 0),
+		PrioritizedTags:         make([]string, 0),
+		PrioritizedGames:        make([]uint32, 0),
+		PrioritizeGamesOnSale:   false,
+		PriceFloor:              0.00,
+		PriceCeiling:            math.MaxFloat64,
+		ReviewCountFloor:        0,
+		ReviewCountCeiling:      math.MaxInt,
+		ReviewPercentageFloor:   0.0,
+		ReviewPercentageCeiling: math.MaxFloat64,
+		ReleaseYearFloor:        1970,              //default to Jan 1, 1970
+		ReleaseYearCeiling:      time.Now().Year(), //default to now
 	}
 
-	userTasteProfile := algorithm.CreateTasteProfile(steamService, steamID)
+	inputtedSettings := req.Settings
 
-	topGames := algorithm.CreateRecommendations(steamService, userTasteProfile, excludedGames, req.Settings)
+	if len(inputtedSettings.ExcludedGames) > 0 {
+		settings.ExcludedGames = inputtedSettings.ExcludedGames
+	}
+	if len(inputtedSettings.ExcludedTags) > 0 {
+		settings.ExcludedTags = inputtedSettings.ExcludedTags
+	}
+	if len(inputtedSettings.PrioritizedTags) > 0 {
+		settings.PrioritizedTags = inputtedSettings.PrioritizedTags
+	}
+	if len(inputtedSettings.PrioritizedGames) > 0 {
+		settings.PrioritizedGames = inputtedSettings.PrioritizedGames
+	}
+	if inputtedSettings.PrioritizeGamesOnSale {
+		settings.PrioritizeGamesOnSale = inputtedSettings.PrioritizeGamesOnSale
+	}
+	if inputtedSettings.PriceFloor != 0.0 {
+		settings.PriceFloor = inputtedSettings.PriceFloor
+	}
+	if inputtedSettings.PriceCeiling != 0.0 {
+		settings.PriceCeiling = inputtedSettings.PriceCeiling
+	}
+	if inputtedSettings.ReviewCountFloor != 0 {
+		settings.ReviewCountFloor = inputtedSettings.ReviewCountFloor
+	}
+	if inputtedSettings.ReviewCountCeiling != 0 {
+		settings.ReviewCountCeiling = inputtedSettings.ReviewCountCeiling
+	}
+	if inputtedSettings.ReviewPercentageFloor != 0.0 {
+		settings.ReviewPercentageFloor = inputtedSettings.ReviewPercentageFloor
+	}
+	if inputtedSettings.ReviewPercentageCeiling != 0.0 {
+		settings.ReviewPercentageCeiling = inputtedSettings.ReviewPercentageCeiling
+	}
+	if inputtedSettings.ReleaseYearFloor != 0 {
+		settings.ReleaseYearFloor = inputtedSettings.ReleaseYearFloor
+	}
+	if inputtedSettings.ReleaseYearCeiling != 0 {
+		settings.ReleaseYearCeiling = inputtedSettings.ReleaseYearCeiling
+	}
+
+	for game := range ownedGames.Response.Games {
+		ownedGameIDs = append(ownedGameIDs, ownedGames.Response.Games[game].AppID)
+	}
+
+	userTasteProfile := algorithm.CreateTasteProfile(steamService, steamID, settings)
+
+	topGames := algorithm.CreateRecommendations(steamService, userTasteProfile, ownedGameIDs, settings)
 
 	recommendations := make([]Recommendation, 0, len(topGames))
 	for _, gameScore := range topGames {
