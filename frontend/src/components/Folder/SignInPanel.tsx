@@ -28,6 +28,21 @@ type SteamAuthUserResponse = {
   };
 };
 
+type ProfileParseResponse = {
+  status: string;
+  name: string;
+  picture: string;
+  steam_id: string;
+  summary: {
+    games_count: number;
+    games: Array<{
+      app_id: number;
+      name: string;
+      playtime_forever: number;
+    }>;
+  };
+};
+
 export default function SignInPanel() {
   const [query, setQuery] = useState("");
   const [steamID, setSteamID] = useState<string | null>(null);
@@ -61,11 +76,47 @@ export default function SignInPanel() {
       });
   }, []);
 
-  function onSearchSubmit(e: React.FormEvent) {
+  async function onSearchSubmit(e: React.FormEvent) {
     e.preventDefault();
-    console.log("Search Steam profile:", query);
-  }
 
+    const trimmedQuery = query.trim();
+    console.log("query:", trimmedQuery);
+
+    if (!trimmedQuery) {
+      alert("query is empty");
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:8080/api/profile/parse", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ profile: trimmedQuery }),
+      });
+
+      console.log("parse status:", res.status);
+
+      const data = await res.json().catch(() => null);
+      console.log("parse data:", data);
+
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to parse Steam profile");
+      }
+
+      const resolvedSteamID = data?.steam_id;
+
+      if (!resolvedSteamID) {
+        throw new Error("No steam_id returned from profile parse");
+      }
+
+      window.location.href = `http://localhost:5173/?steamid=${resolvedSteamID}`;
+    } catch (err) {
+      console.error("Textbox search failed:", err);
+      alert(err instanceof Error ? err.message : "Textbox search failed");
+    }
+  }
   function onSteamSignInClick() {
     window.location.href = "http://localhost:8080/auth/steam/login";
   }

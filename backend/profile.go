@@ -17,6 +17,7 @@ type ProfileResult struct {
 	Name    string `json:"name,omitempty"`
 	Picture string `json:"picture,omitempty"`
 	Summary any    `json:"summary,omitempty"`
+	SteamID string `json:"steam_id,omitempty"`
 }
 
 func profileParseHandler(w http.ResponseWriter, r *http.Request) {
@@ -30,7 +31,6 @@ func profileParseHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	steamID := req.Profile
-
 	if steamID == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode(map[string]string{"error": "steam id required"})
@@ -40,6 +40,7 @@ func profileParseHandler(w http.ResponseWriter, r *http.Request) {
 	cfg := config.LoadConfig()
 	db := database.GetDB()
 	steamService := steam.NewScrapingService(cfg, db)
+	defer steamService.Close()
 
 	playerSummary, err := steamService.GetUserProfile(steamID)
 	if err != nil {
@@ -48,39 +49,33 @@ func profileParseHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	visibility := playerSummary.Visibility
+	isPublic := playerSummary.Visibility == 3
 
-	if visibility != 3 {
-		w.WriteHeader(http.StatusInternalServerError)
-		_ = json.NewEncoder(w).Encode(map[string]string{"error": "Private profile!"})
-		return
+	response := map[string]any{
+		"status":   "[ok]",
+		"steam_id": playerSummary.SteamID,
+		"name":     playerSummary.PersonaName,
+		"picture":  playerSummary.AvatarFull,
+		"public":   isPublic,
 	}
 
-	ownedGames, err := steamService.GetUserOwnedGames(steamID)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		_ = json.NewEncoder(w).Encode(map[string]string{"error": "failed to fetch owned games"})
-		return
+	if isPublic {
+		ownedGames, err := steamService.GetUserOwnedGames(steamID)
+		if err == nil {
+			userGames := make([]map[string]interface{}, 0)
+			for _, game := range ownedGames.Response.Games {
+				userGames = append(userGames, map[string]interface{}{
+					"app_id":           game.AppID,
+					"name":             game.Name,
+					"playtime_forever": game.PlaytimeForever,
+				})
+			}
+			response["summary"] = map[string]any{
+				"games_count": len(userGames),
+				"games":       userGames,
+			}
+		}
 	}
 
-	userGames := make([]map[string]interface{}, 0)
-	for _, game := range ownedGames.Response.Games {
-		userGames = append(userGames, map[string]interface{}{
-			"app_id":           game.AppID,
-			"name":             game.Name,
-			"playtime_forever": game.PlaytimeForever,
-		})
-	}
-
-	_ = json.NewEncoder(w).Encode(ProfileResult{
-		Status:  "[public]",
-		Name:    playerSummary.PersonaName,
-		Picture: playerSummary.Avatar,
-		Summary: map[string]any{
-			"games_count": len(userGames),
-			"games":       userGames,
-		},
-	})
-
-	steamService.Close()
+	_ = json.NewEncoder(w).Encode(response)
 }
