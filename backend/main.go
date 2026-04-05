@@ -12,6 +12,21 @@ import (
 	"github.com/gorilla/mux"
 )
 
+func enableCORS(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 func main() {
 	cfg := config.LoadConfig()
 	database.InitDatabase()
@@ -36,11 +51,15 @@ func main() {
 	r.HandleFunc("/api/user/profile/{steamid}", GetUserProfileHandler(steamService)).Methods(http.MethodGet) // scrapes user profile and owned games
 	r.HandleFunc("/api/stats", StatsHandler(steamService)).Methods("GET")                                    // gets scraping statistics
 
+	r.HandleFunc("/auth/steam/login", SteamLoginHandler).Methods(http.MethodGet)
+	r.HandleFunc("/auth/steam/callback", SteamCallbackHandler).Methods(http.MethodGet)
+	r.HandleFunc("/api/auth/steam-user/{steamid}", GetSteamAuthUserHandler(steamService)).Methods(http.MethodGet)
+
 	// start server
 	log.Printf("Available endpoints:")
 	log.Printf("  GET  /api/health - Health check")
 	log.Printf("API server running on http://localhost:%s", cfg.ServerPort)
-	log.Fatal(http.ListenAndServe(":"+cfg.ServerPort, r))
+	log.Fatal(http.ListenAndServe(":"+cfg.ServerPort, enableCORS(r)))
 }
 
 func healthHandler(w http.ResponseWriter, r *http.Request) {
