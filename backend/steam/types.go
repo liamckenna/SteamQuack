@@ -107,4 +107,5 @@ type Settings struct {
 	ReviewPercentageCeiling float64  `json:"review_percentage_ceiling"`
 	ReleaseYearFloor        int      `json:"release_year_floor"`
 	ReleaseYearCeiling      int      `json:"release_year_ceiling"`
+	RandomizationFactor     float64  `json:"randomization_factor"`
 }

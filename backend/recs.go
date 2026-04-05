@@ -66,6 +66,7 @@ func recommendationsHandler(w http.ResponseWriter, r *http.Request) {
 		ReviewPercentageCeiling: math.MaxFloat64,
 		ReleaseYearFloor:        1970,              //default to Jan 1, 1970
 		ReleaseYearCeiling:      time.Now().Year(), //default to now
+		RandomizationFactor:     0.0,
 	}
 
 	inputtedSettings := req.Settings
@@ -108,6 +109,9 @@ func recommendationsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	if inputtedSettings.ReleaseYearCeiling != 0 {
 		settings.ReleaseYearCeiling = inputtedSettings.ReleaseYearCeiling
+	}
+	if inputtedSettings.RandomizationFactor != 0.0 {
+		settings.RandomizationFactor = inputtedSettings.RandomizationFactor
 	}
 
 	for game := range ownedGames.Response.Games {
