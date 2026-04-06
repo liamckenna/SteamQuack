@@ -21,9 +21,6 @@ func main() {
 	log.Println("Database initialized")
 	db := database.GetDB()
 	steamService := steam.NewScrapingService(cfg, db)
-	defer steamService.Close()
-
-	// set up DB update scheduler
 	updateService := update.NewUpdateService(steamService, db)
 	scheduler := update.NewScheduler(updateService)
 	scheduler.Start()

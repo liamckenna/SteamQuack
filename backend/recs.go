@@ -56,6 +56,4 @@ func recommendationsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	_ = json.NewEncoder(w).Encode(resp)
-
-	steamService.Close()
 }

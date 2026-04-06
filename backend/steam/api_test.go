@@ -9,7 +9,7 @@ import (
 // tests the API call to fetch user profile
 func TestFetchPlayerSummary(t *testing.T) {
 	cfg := config.LoadConfig()
-	client := NewAPIClient(cfg.SteamAPIKey)
+	client := NewAPIClient(cfg.SteamAPIKey, 1500)
 	steamID := "76561198012345678"
 
 	summary, err := client.FetchPlayerSummary(steamID)
@@ -28,7 +28,7 @@ func TestFetchPlayerSummary(t *testing.T) {
 // tests the API call to fetch user's owned games
 func TestFetchOwnedGames(t *testing.T) {
 	cfg := config.LoadConfig()
-	client := NewAPIClient(cfg.SteamAPIKey)
+	client := NewAPIClient(cfg.SteamAPIKey, 1500)
 	steamID := "76561198012345678"
 
 	games, err := client.FetchOwnedGames(steamID)
@@ -49,11 +49,7 @@ func TestScrapeGameDataWithSpecificAppID(t *testing.T) {
 	defer CloseTestDB(db)
 
 	cfg := config.LoadConfig()
-	client := NewAPIClient(cfg.SteamAPIKey)
-	service := &ScrapingService{
-		client: client,
-		db:     db,
-	}
+	service := NewScrapingService(cfg, db)
 
 	game, err := service.ScrapeSpecificGame(220)
 
@@ -87,11 +83,7 @@ func TestScrapeGameDataMultipleGames(t *testing.T) {
 	defer CloseTestDB(db)
 
 	cfg := config.LoadConfig()
-	client := NewAPIClient(cfg.SteamAPIKey)
-	service := &ScrapingService{
-		client: client,
-		db:     db,
-	}
+	service := NewScrapingService(cfg, db)
 
 	maxGames := 3
 	err := service.ScrapeGameData(maxGames, 0)

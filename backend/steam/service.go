@@ -6,6 +6,7 @@ import (
 	"steamquack/backend/config"
 	"steamquack/backend/models"
 	"steamquack/backend/tags"
+	"sync"
 	"time"
 
 	"gorm.io/gorm"
@@ -13,16 +14,13 @@ import (
 )
 
 type ScrapingService struct {
-	client *APIClient
 	db     *gorm.DB
 	config *config.Config
 }
 
 // creates a new Steam scraping service
 func NewScrapingService(cfg *config.Config, db *gorm.DB) *ScrapingService {
-	client := NewAPIClient(cfg.SteamAPIKey)
 	return &ScrapingService{
-		client: client,
 		db:     db,
 		config: cfg,
 	}
@@ -30,13 +28,14 @@ func NewScrapingService(cfg *config.Config, db *gorm.DB) *ScrapingService {
 
 // scrapes batch game data from SteamSpy paginated endpoint
 func (s *ScrapingService) ScrapeBatchGameData() error {
+	client := NewAPIClient(s.config.SteamAPIKey, 60000)
+	defer client.Close()
+
 	log.Println("Starting batch game data scraping from SteamSpy...")
 	page := 0
 
 	for {
-		log.Printf("Fetching SteamSpy page %d...", page)
-
-		pageData, err := s.client.FetchSteamSpyPage(page)
+		pageData, err := client.FetchSteamSpyPage(page)
 		if err != nil {
 			log.Printf("Stopping batch scrape: error fetching page %d: %v", page, err)
 			break
@@ -67,7 +66,6 @@ func (s *ScrapingService) ScrapeBatchGameData() error {
 		page++
 
 		log.Println("Waiting 60 seconds before fetching the next page to respect rate limits...")
-		time.Sleep(60 * time.Second)
 	}
 
 	return nil
@@ -100,6 +98,11 @@ func (s *ScrapingService) processIndividualGame(spyGame *SteamSpyPageGame) error
 
 // fetches descriptions, release dates, and tags for new games
 func (s *ScrapingService) UpdateNewGameDetails() error {
+	steamClient := NewAPIClient(s.config.SteamAPIKey, 1500)
+	steamspyClient := NewAPIClient(s.config.SteamAPIKey, 1000)
+	defer steamClient.Close()
+	defer steamspyClient.Close()
+
 	// Determine the start of the current day to filter new entries
 	now := time.Now()
 	startOfDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
@@ -114,18 +117,32 @@ func (s *ScrapingService) UpdateNewGameDetails() error {
 	for i, game := range newGames {
 		log.Printf("Fetching details for new game %d/%d: %s", i+1, len(newGames), game.Name)
 
-		// 1. Fetch Steam details for description & release date
-		gameDetails, err := s.client.FetchGameDetails(game.AppID)
-		if err != nil {
-			log.Printf("Warning: Failed to fetch Steam details for %d: %v", game.AppID, err)
+		var gameDetails *SteamGameDetails
+		var steamspyData *SteamSpyAppDetails
+		var gameDetailsErr error
+		var steamspyDataErr error
+		var wg sync.WaitGroup
+		wg.Add(2)
+		go func() {
+			defer wg.Done()
+			gameDetails, gameDetailsErr = steamClient.FetchGameDetails(game.AppID)
+		}()
+		go func() {
+			defer wg.Done()
+			steamspyData, steamspyDataErr = steamspyClient.FetchSteamSpyData(game.AppID)
+		}()
+		wg.Wait()
+
+		// 1. Update with Steam details for description & release date
+		if gameDetailsErr != nil {
+			log.Printf("Warning: Failed to fetch Steam details for %d: %v", game.AppID, gameDetailsErr)
 		} else if gameDetails != nil {
 			UpdateGameWithSteamDetails(&game, gameDetails)
 		}
 
-		// 2. Fetch SteamSpy tags
-		steamspyData, err := s.client.FetchSteamSpyData(game.AppID)
-		if err != nil {
-			log.Printf("Warning: SteamSpy tags unavailable for app %d: %v", game.AppID, err)
+		// 2. Update with SteamSpy tags
+		if steamspyDataErr != nil {
+			log.Printf("Warning: SteamSpy tags unavailable for app %d: %v", game.AppID, steamspyDataErr)
 		} else if steamspyData != nil {
 			UpdateGameWithTagData(&game, gameDetails, steamspyData)
 		}
@@ -138,10 +155,13 @@ func (s *ScrapingService) UpdateNewGameDetails() error {
 
 // scrapes game data from Steam
 func (s *ScrapingService) ScrapeGameData(maxGames int, nextLastAppId int) error {
+	client := NewAPIClient(s.config.SteamAPIKey, 1500)
+	defer client.Close()
+
 	log.Printf("Starting Steam game data scraping (max %d games)", maxGames)
 
 	// gets list of all apps
-	appList, returnedLastAppId, err := s.client.FetchAppList(nextLastAppId)
+	appList, returnedLastAppId, err := client.FetchAppList(nextLastAppId)
 	if err != nil {
 		return fmt.Errorf("failed to fetch app list: %w", err)
 	}
@@ -177,9 +197,6 @@ func (s *ScrapingService) ScrapeGameData(maxGames int, nextLastAppId int) error 
 
 		processed++
 		log.Printf("Successfully processed game %d/%d: %s", processed, maxGames, app.Name)
-
-		// adds delay due to rate limits
-		time.Sleep(2 * time.Second)
 	}
 
 	log.Printf("Scraping complete! Processed: %d (next batch starts at app %d)", processed, returnedLastAppId)
@@ -188,7 +205,10 @@ func (s *ScrapingService) ScrapeGameData(maxGames int, nextLastAppId int) error 
 
 // scrapes data for a single game and saves to database
 func (s *ScrapingService) scrapeIndividualGame(appID uint32) error {
-	gameDetails, err := s.client.FetchGameDetails(appID)
+	client := NewAPIClient(s.config.SteamAPIKey, 1500)
+	defer client.Close()
+
+	gameDetails, err := client.FetchGameDetails(appID)
 	if err != nil {
 		return fmt.Errorf("failed to fetch game details: %w", err)
 	}
@@ -216,7 +236,7 @@ func (s *ScrapingService) scrapeIndividualGame(appID uint32) error {
 	}
 
 	// fetch community voted tags from SteamSpy using game ID
-	steamspyData, err := s.client.FetchSteamSpyData(appID)
+	steamspyData, err := client.FetchSteamSpyData(appID)
 	if err != nil {
 		log.Printf("Warning: SteamSpy unavailable for app %d, using Steam tags: %v", appID, err)
 		steamspyData = nil // will cause fallback to be used in transform function
@@ -287,15 +307,16 @@ func (s *ScrapingService) GetScrapingStats() (map[string]interface{}, error) {
 
 // fetches a user's profile information
 func (s *ScrapingService) GetUserProfile(steamID string) (*SteamPlayerSummary, error) {
-	return s.client.FetchPlayerSummary(steamID)
+	client := NewAPIClient(s.config.SteamAPIKey, 0)
+	defer client.Close()
+
+	return client.FetchPlayerSummary(steamID)
 }
 
 // fetches a user's owned games by playtime
 func (s *ScrapingService) GetUserOwnedGames(steamID string) (*SteamOwnedGamesResponse, error) {
-	return s.client.FetchOwnedGames(steamID)
-}
+	client := NewAPIClient(s.config.SteamAPIKey, 0)
+	defer client.Close()
 
-// clean up
-func (s *ScrapingService) Close() {
-	s.client.Close()
+	return client.FetchOwnedGames(steamID)
 }

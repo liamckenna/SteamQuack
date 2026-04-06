@@ -73,6 +73,4 @@ func profileParseHandler(w http.ResponseWriter, r *http.Request) {
 			"games":       userGames,
 		},
 	})
-
-	steamService.Close()
 }
