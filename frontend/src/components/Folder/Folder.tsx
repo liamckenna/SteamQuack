@@ -5,6 +5,18 @@ import DiagnosticsPanel from "./DiagnosticsPanel";
 import PreferencesPanel from "./PreferencesPanel";
 import PrescriptionPanel from "./PrescriptionPanel";
 
+export type PreferencesState = {
+  priceRange: [number, number];
+  reviewRange: [number, number];
+  releaseYearRange: [number, number];
+  reviewCountRange: [number, number];
+  prioritizeSale: boolean;
+  prioritizedTags: string[];
+  excludedTags: string[];
+  prioritizedGames: number[];
+  excludedGames: number[];
+};
+
 export type TabId = "signin" | "diagnostics" | "preferences" | "prescription";
 
 const TABS: { id: TabId; label: string }[] = [
@@ -16,6 +28,17 @@ const TABS: { id: TabId; label: string }[] = [
 
 export default function Folder() {
   const [activeTab, setActiveTab] = useState<TabId>("signin");
+  const [preferences, setPreferences] = useState<PreferencesState>({
+    priceRange: [0, 100],
+    reviewRange: [0, 100],
+    releaseYearRange: [1970, new Date().getFullYear()],
+    reviewCountRange: [0, 100000],
+    prioritizeSale: false,
+    prioritizedTags: [],
+    excludedTags: [],
+    prioritizedGames: [],
+    excludedGames: []
+  });
 
   return (
     <div className="folder">
@@ -34,7 +57,12 @@ export default function Folder() {
       <div className="folder-panel">
         {activeTab === "signin" && <SignInPanel />}
         {activeTab === "diagnostics" && <DiagnosticsPanel />}
-        {activeTab === "preferences" && <PreferencesPanel />}
+        {activeTab === "preferences" && (
+          <PreferencesPanel 
+            preferences={preferences} 
+            setPreferences={setPreferences} 
+          />
+        )}
         {activeTab === "prescription" && <PrescriptionPanel />}
       </div>
     </div>

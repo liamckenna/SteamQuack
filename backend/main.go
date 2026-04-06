@@ -25,6 +25,7 @@ func main() {
 	// set up API routes
 	r := mux.NewRouter()
 	r.HandleFunc("/api/health", healthHandler).Methods(http.MethodGet)
+	r.HandleFunc("/api/preferences/options", optionsHandler).Methods(http.MethodGet)
 
 	//frontend sends backend profile string
 	r.HandleFunc("/api/profile/parse", profileParseHandler).Methods(http.MethodPost)
