@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"steamquack/backend/database"
 	"steamquack/backend/steam"
 
 	"github.com/gorilla/mux"
@@ -250,4 +251,22 @@ func GetSteamAuthUserHandler(steamService *steam.ScrapingService) http.HandlerFu
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(response)
 	}
+}
+
+func optionsHandler(w http.ResponseWriter, r *http.Request) {
+	db := database.GetDB()
+	var tags []string
+	var games []struct {
+		ID   uint32 `json:"id"`
+		Name string `json:"name"`
+	}
+
+	db.Table("game_tags").Distinct("tag_name").Pluck("tag_name", &tags)
+	db.Table("games").Select("app_id as id, name").Find(&games)
+
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(map[string]interface{}{
+		"tags":  tags,
+		"games": games,
+	})
 }
