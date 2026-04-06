@@ -3,6 +3,7 @@ package algorithm
 import (
 	"cmp"
 	"fmt"
+	"math/rand"
 	"slices"
 	"sort"
 	"steamquack/backend/database"
@@ -35,6 +36,7 @@ func CreateRecommendations(steamService *steam.ScrapingService, tasteProfile map
 
 	for _, game := range allGames {
 		score := 0.0
+		multiplier := 1.0
 
 		if exists := slices.Contains(excludedGames, game.AppID); exists { //excluded games
 			continue
@@ -66,11 +68,13 @@ func CreateRecommendations(steamService *steam.ScrapingService, tasteProfile map
 			}
 		}
 
-		score *= 1 + (float64(game.ReviewPercentage) / 100) //scale by review percentage
+		multiplier += (float64(game.ReviewPercentage) / 100) //scale by review percentage
 
 		if settings.PrioritizeGamesOnSale && game.CurrentPrice < game.InitialPrice { //prioritize games on sale (scale by discount amount)
-			score *= 1 + (float64(game.InitialPrice-game.CurrentPrice) / float64(game.InitialPrice))
+			multiplier += (float64(game.InitialPrice-game.CurrentPrice) / float64(game.InitialPrice))
 		}
+
+		score *= multiplier
 
 		if score > 0 {
 			gameScores[game.AppID] = GameScore{
@@ -137,7 +141,8 @@ func CreateTasteProfile(steamService *steam.ScrapingService, profileURL string, 
 					category := tagCategories[tagLower]
 					categoryWeight := tagCategoryWeights[category]
 					tagContribution := weight * float64(playtime)
-					userTagWeights[tag] += tagContribution / 100 * prioritizedWeight * categoryWeight
+					randomizedContribution := 1 + settings.RandomizationFactor*(rand.Float64()*2-1)
+					userTagWeights[tag] += tagContribution / 100 * prioritizedWeight * categoryWeight * randomizedContribution
 				}
 			}
 		}

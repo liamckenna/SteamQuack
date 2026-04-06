@@ -27,6 +27,7 @@ function App() {
             review_percentage_ceiling: 100.0,
             release_year_floor: 1970,
             release_year_ceiling: new Date().getFullYear(),
+            randomization_factor: 0.0,
             }, null, 2)
     );
     const [recs, setRecs] = useState<Recommendation[]>([]);
