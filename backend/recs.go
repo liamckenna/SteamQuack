@@ -6,6 +6,7 @@ import (
 	"steamquack/backend/algorithm"
 	"steamquack/backend/config"
 	"steamquack/backend/database"
+	"steamquack/backend/models"
 	"steamquack/backend/steam"
 )
 
@@ -15,9 +16,15 @@ type RecommendationRequest struct {
 }
 
 type Recommendation struct {
-	GameID uint32  `json:"game_id"`
-	Score  float64 `json:"score"`
-	Name   string  `json:"name"`
+	GameID           uint32  `json:"game_id"`
+	Score            float64 `json:"score"`
+	Name             string  `json:"name"`
+	Description      string  `json:"description"`
+	InitialPrice     float64 `json:"initial_price"`
+	CurrentPrice     float64 `json:"current_price"`
+	ReleaseDateUnix  int64   `json:"release_date_unix"`
+	ReviewCount      int     `json:"review_count"`
+	ReviewPercentage float64 `json:"review_percentage"`
 }
 
 type RecommendationResponse struct {
@@ -60,10 +67,22 @@ func recommendationsHandler(w http.ResponseWriter, r *http.Request) {
 
 	recommendations := make([]Recommendation, 0, len(topGames))
 	for _, gameScore := range topGames {
+		var game models.Game
+		if err := db.Where("app_id = ?", gameScore.GameID).Find(&game).Error; err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			_ = json.NewEncoder(w).Encode(map[string]string{"error": "failed to fetch games"})
+			return
+		}
 		recommendations = append(recommendations, Recommendation{
-			GameID: gameScore.GameID,
-			Score:  gameScore.Score,
-			Name:   gameScore.Name,
+			GameID:           gameScore.GameID,
+			Score:            gameScore.Score,
+			Name:             gameScore.Name,
+			Description:      game.Description,
+			InitialPrice:     game.InitialPrice,
+			CurrentPrice:     game.CurrentPrice,
+			ReleaseDateUnix:  game.ReleaseDateUnix,
+			ReviewCount:      game.ReviewCount,
+			ReviewPercentage: game.ReviewPercentage,
 		})
 	}
 	resp := RecommendationResponse{

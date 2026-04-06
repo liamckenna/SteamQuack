@@ -3,27 +3,32 @@ import { useState, useEffect } from 'react';
 import { getRecommendations, type Recommendation } from "../../api";
 
 interface GameTileProps {
-  game_id: number;
-  score: number;
-  name: string;
-  description: string;
+  game: Recommendation;
 };
 
 // GameTile component
-export const GameTile = ({ game_id, score, name, description }: GameTileProps) => {
-  const imageUrl = `https://steamcdn-a.akamaihd.net/steam/apps/${game_id}/header.jpg`;
+export const GameTile = ({ game }: GameTileProps) => {
+  const imageUrl = `https://steamcdn-a.akamaihd.net/steam/apps/${game.game_id}/header.jpg`;
 
   return (
     <div>
       <img src={imageUrl} width="50%"/>
       <div>
-        <h3>{name}</h3>
-        <p>{description}</p>
+        <h3>{game.name}</h3>
+        <div 
+          dangerouslySetInnerHTML={{ __html: game.description }}
+        />
+        {game.initial_price != game.current_price && (
+          <p><s>${String(game.initial_price)}</s></p>
+        )}
+        <p>${String(game.current_price)}</p>
+        <p>Release Date: {(new Date(game.release_date_unix * 1000)).toLocaleDateString()}</p>
+        <p>Review Score: {game.review_percentage}% ({game.review_count})</p>
       </div>
       <button
         type="button"
         className="visit-store-page-btn"
-        onClick={() => { window.open("https://store.steampowered.com/app/" + game_id, "_blank", "noopener,noreferrer") }}
+        onClick={() => { window.open("https://store.steampowered.com/app/" + game.game_id, "_blank", "noopener,noreferrer") }}
       >
         <span>Visit store page</span>
       </button>
@@ -77,10 +82,7 @@ export default function PrescriptionPanel() {
       {recommendations.map((game) => (
         <GameTile
           key={game.game_id}
-          game_id={game.game_id}
-          score={100}
-          name={game.name}
-          description={"[Placeholder description]"}
+          game={game}
         />
       ))}
     </div>

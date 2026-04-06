@@ -37,6 +37,12 @@ export type Recommendation = {
   game_id: number;
   score: number;
   name: string;
+  description: string;
+  initial_price: number;
+  current_price: number;
+  release_date_unix: number;
+  review_count: number;
+  review_percentage: number;
 };
 
 export type RecommendationResponse = {
