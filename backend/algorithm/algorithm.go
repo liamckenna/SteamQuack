@@ -1,12 +1,16 @@
 package algorithm
 
 import (
+	"cmp"
 	"fmt"
+	"math/rand"
+	"slices"
 	"sort"
 	"steamquack/backend/database"
 	"steamquack/backend/models"
 	"steamquack/backend/steam"
 	"steamquack/backend/tags"
+	"strings"
 )
 
 type GameScore struct {
@@ -15,7 +19,7 @@ type GameScore struct {
 	Name   string
 }
 
-func CreateRecommendations(steamService *steam.ScrapingService, tasteProfile map[string]float64, excludedApps []uint32, settings map[string]any) []GameScore {
+func CreateRecommendations(steamService *steam.ScrapingService, tasteProfile map[string]float64, excludedGames []uint32, settings steam.Settings) []GameScore {
 
 	db := database.GetDB()
 
@@ -32,34 +36,52 @@ func CreateRecommendations(steamService *steam.ScrapingService, tasteProfile map
 
 	for _, game := range allGames {
 		score := 0.0
-		excluded := false
-		for app := range excludedApps {
-			if excludedApps[app] == game.AppID {
-				gameScores[game.AppID] = GameScore{
-					GameID: game.AppID,
-					Score:  score,
-					Name:   game.Name,
-				}
-				excluded = true
-				break
-			}
+		multiplier := 1.0
+
+		if exists := slices.Contains(excludedGames, game.AppID); exists { //excluded games
+			continue
 		}
-		if excluded {
+		if (game.CurrentPrice < settings.PriceFloor) || (game.CurrentPrice > settings.PriceCeiling) { //price range
+			continue
+		}
+		if (game.ReviewCount < settings.ReviewCountFloor) || (game.ReviewCount > settings.ReviewCountCeiling) { //review count range
+			continue
+		}
+		if (game.ReviewPercentage < settings.ReviewPercentageFloor) || (game.ReviewPercentage > settings.ReviewPercentageCeiling) { //review percentage range
+			continue
+		}
+		if (game.ReleaseDate.Year() < settings.ReleaseYearFloor) || (game.ReleaseDate.Year() > settings.ReleaseYearCeiling) { //release year range
 			continue
 		}
 
 		for _, tag := range game.Tags {
 			if tag.Weight > 0 {
-				score += tasteProfile[tag.TagName] * tag.Weight
+				if exists := slices.Contains(settings.ExcludedTags, tag.TagName); exists { //excluded tags
+					score = 0.0
+					break
+				}
+				if exists := slices.Contains(settings.PrioritizedTags, tag.TagName); exists { //prioritized tags (scale contribution by 2)
+					score += tasteProfile[tag.TagName] * tag.Weight * 2
+				} else {
+					score += tasteProfile[tag.TagName] * tag.Weight
+				}
 			}
 		}
 
-		//other factors here
+		multiplier += (float64(game.ReviewPercentage) / 100) //scale by review percentage
 
-		gameScores[game.AppID] = GameScore{
-			GameID: game.AppID,
-			Score:  score,
-			Name:   game.Name,
+		if settings.PrioritizeGamesOnSale && game.CurrentPrice < game.InitialPrice { //prioritize games on sale (scale by discount amount)
+			multiplier += (float64(game.InitialPrice-game.CurrentPrice) / float64(game.InitialPrice))
+		}
+
+		score *= multiplier
+
+		if score > 0 {
+			gameScores[game.AppID] = GameScore{
+				GameID: game.AppID,
+				Score:  score,
+				Name:   game.Name,
+			}
 		}
 	}
 
@@ -90,24 +112,54 @@ func CreateRecommendations(steamService *steam.ScrapingService, tasteProfile map
 	return topGames
 }
 
-func CreateTasteProfile(steamService *steam.ScrapingService, profileURL string) map[string]float64 {
+func CreateTasteProfile(steamService *steam.ScrapingService, profileURL string, settings steam.Settings) map[string]float64 {
 
 	// called automatically from successful api call after ensuring user has a public profile
 
 	gamePlaytimeMap := GetUserAppsAndPlaytime(steamService, profileURL)
 
-	userTagWeights := tags.GetInitialTagWeights()
+	userTagWeights := make(map[string]float64)
 
+	tagCategoryWeights := tags.GetTagCategoryWeights()
+
+	tagCategories := tags.GetAllPossibleTags()
+
+	prioritizedWeight := 1.0
 	for gameID, playtime := range gamePlaytimeMap {
 		gameTagWeights := tags.GetBaseTagWeights(gameID)
 		if playtime > 0 {
+			if exists := slices.Contains(settings.ExcludedGames, gameID); exists {
+				continue
+			}
+			prioritizedWeight = 1.0
+			if exists := slices.Contains(settings.PrioritizedGames, gameID); exists { //prioritized games (scale contribution by 2)
+				prioritizedWeight = 2.0
+			}
 			for tag, weight := range gameTagWeights {
-				if weight > 0 {
+				if weight > 0 && weight <= 1 { //this "&& weight <= 1" filters out the broken tags
+					tagLower := strings.ToLower(tag)
+					category := tagCategories[tagLower]
+					categoryWeight := tagCategoryWeights[category]
 					tagContribution := weight * float64(playtime)
-					userTagWeights[tag] += tagContribution
+					randomizedContribution := 1 + settings.RandomizationFactor*(rand.Float64()*2-1)
+					userTagWeights[tag] += tagContribution / 100 * prioritizedWeight * categoryWeight * randomizedContribution
 				}
 			}
 		}
+	}
+
+	//print user taste profile for debugging
+	keys := make([]string, 0, len(userTagWeights))
+	for k := range userTagWeights {
+		keys = append(keys, k)
+	}
+
+	slices.SortFunc(keys, func(a, b string) int {
+		return cmp.Compare(userTagWeights[a], userTagWeights[b])
+	})
+
+	for _, k := range keys {
+		fmt.Printf("%s: %.2f\n", k, userTagWeights[k])
 	}
 
 	return userTagWeights
@@ -123,8 +175,6 @@ func GetUserAppsAndPlaytime(steamService *steam.ScrapingService, profileURL stri
 		fmt.Println("Error fetching user owned games:", err)
 		return gamePlaytimes
 	}
-	// for each game in profile:
-	// get playtime for each game, store in map[appID]playtime
 
 	gameCount := userOwnedGames.Response.GameCount
 	gamez := userOwnedGames.Response.Games
@@ -132,11 +182,6 @@ func GetUserAppsAndPlaytime(steamService *steam.ScrapingService, profileURL stri
 	for i := 0; i < gameCount; i++ {
 		game := gamez[i]
 		gamePlaytimes[game.AppID] = uint32(game.PlaytimeForever)
-	}
-
-	//print map for testing
-	for appID, playtime := range gamePlaytimes {
-		fmt.Printf("App ID: %d, Playtime: %d minutes\n", appID, playtime)
 	}
 
 	return gamePlaytimes

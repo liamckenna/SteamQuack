@@ -13,7 +13,22 @@ function App() {
     const [profileError, setProfileError] = useState<string | null>(null);
 
     const [settingsText, setSettingsText] = useState(
-        JSON.stringify({ genres: ["rpg", "strategy"], maxPrice: 20 }, null, 2),
+        JSON.stringify({
+            excluded_games: [],
+            excluded_tags: [],
+            prioritized_games: [],
+            prioritized_tags: [],
+            prioritize_games_on_sale: false,
+            price_floor: 0.0,
+            price_ceiling: 100.0,
+            review_count_floor: 0,
+            review_count_ceiling: 100000,
+            review_percentage_floor: 0.0,
+            review_percentage_ceiling: 100.0,
+            release_year_floor: 1970,
+            release_year_ceiling: new Date().getFullYear(),
+            randomization_factor: 0.0,
+            }, null, 2)
     );
     const [recs, setRecs] = useState<Recommendation[]>([]);
     const [recsLoading, setRecsLoading] = useState(false);
