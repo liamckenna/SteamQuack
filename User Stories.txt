@@ -43,11 +43,21 @@
 
 
 ## This week:
-- Fill the database completely - Daniel
-- Make folder sign in page functional - Vishwa
-- Prescription page display (display recommendations on final page) - Daniel
-- Implement preferences into the algorithm (backend) - Liam
-- Preferences page display - Dylan
-- Properly store valid profile id (temporarily) - Liam
-- Look into official sign in button - Vishwa
+- User sign in through unique username or steam profile page link - Vishwa
+- Sign out button - Vishwa
+- Unit tests for new functionality - Vishwa
+- Prescription page display - Daniel (Mostly done)
+- on sale games have visual indicator - Daniel
+- Merge update scheduler branch - Daniel
+- Preferences page display - Dylan (Mostly done)
+- Do algorithm in chunks - Liam
+- Dialogue system - Liam
 
+
+## Later:
+- Sort functionality on prescriptions
+- Create page system for both Prescriptions and diagnostics (and maybe preferences)
+- Diagnostics page
+- write dialogue
+- update site graphics
+- private steam profile guidance
