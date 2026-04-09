@@ -121,19 +121,19 @@ func GetAllTagCategories() []string {
 // important weights that we need to play around with to improve the algorithm's overall output
 func GetTagCategoryWeights() map[string]float64 {
 	return map[string]float64{
-		"super-genre":         3.0,
-		"genre":               4.0,
-		"sub-genre":           4.0,
-		"visuals & viewpoint": 2.0,
-		"themes & moods":      2.0,
-		"features":            1.0,
-		"players":             1.0,
-		"other":               0.5,
-		"software":            1.0,
+		"super-genre":         0.25,
+		"genre":               0.75,
+		"sub-genre":           1.0,
+		"visuals & viewpoint": 0.5,
+		"themes & moods":      0.5,
+		"features":            0.25,
+		"players":             0.125,
+		"other":               0.125,
+		"software":            0.125,
 		"assessments":         0.5,
-		"ratings":             0.2,
-		"hardware-input":      0.2,
-		"funding":             0.1,
+		"ratings":             0.05,
+		"hardware-input":      0.05,
+		"funding":             0.025,
 	}
 }
 func GetAllPossibleTags() map[string]string {

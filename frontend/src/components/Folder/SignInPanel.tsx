@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import "./SignInPanel.css";
 import SteamLogoImage from "../../assets/images/Steam_icon_logo.png";
+import { useDialogue } from "../../context/DialogueContext";
 
 function SearchIcon() {
   return <span className="signin-panel__search-icon">⌕</span>;
@@ -48,6 +49,7 @@ export default function SignInPanel() {
   const [steamID, setSteamID] = useState<string | null>(null);
   const [steamName, setSteamName] = useState<string | null>(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
+  const { startDialogue } = useDialogue();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -67,6 +69,7 @@ export default function SignInPanel() {
       })
       .then((data) => {
         setSteamName(data.user.persona_name);
+        startDialogue("signInSuccess");
       })
       .catch((err) => {
         console.error(err);
@@ -110,10 +113,11 @@ export default function SignInPanel() {
       if (!resolvedSteamID) {
         throw new Error("No steam_id returned from profile parse");
       }
-
+      
       window.location.href = `http://localhost:5173/?steamid=${resolvedSteamID}`;
     } catch (err) {
       console.error("Textbox search failed:", err);
+      startDialogue("signInFailure");
       alert(err instanceof Error ? err.message : "Textbox search failed");
     }
   }

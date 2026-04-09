@@ -16,7 +16,7 @@ func InitDatabase() {
 
 	// Connect to SQLite database
 	DB, err = gorm.Open(sqlite.Open("steamquack.db"), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
+		Logger: logger.Default.LogMode(logger.Warn),
 	})
 
 	if err != nil {
