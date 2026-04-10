@@ -111,7 +111,7 @@ export default function SignInPanel() {
         throw new Error("No steam_id returned from profile parse");
       }
 
-      window.location.href = `http://localhost:5173/?steamid=${resolvedSteamID}`;
+      window.location.href = `${window.location.origin}/?steamid=${resolvedSteamID}`;
     } catch (err) {
       console.error("Textbox search failed:", err);
       alert(err instanceof Error ? err.message : "Textbox search failed");
@@ -119,6 +119,12 @@ export default function SignInPanel() {
   }
   function onSteamSignInClick() {
     window.location.href = "http://localhost:8080/auth/steam/login";
+  }
+
+  function onSignOut() {
+    const url = new URL(window.location.href);
+    url.searchParams.delete("steamid");
+    window.location.href = url.pathname + url.search;
   }
 
   if (steamID) {
@@ -132,6 +138,14 @@ export default function SignInPanel() {
           </h2>
 
           <p className="signin-panel__welcome-subtitle">Steam ID: {steamID}</p>
+
+          <button
+            type="button"
+            className="signin-panel__signout-btn"
+            onClick={onSignOut}
+          >
+            Sign out
+          </button>
         </div>
       </div>
     );
