@@ -3,6 +3,7 @@ package algorithm
 import (
 	"cmp"
 	"fmt"
+	"math"
 	"math/rand/v2"
 	"slices"
 	"sort"
@@ -62,8 +63,8 @@ func CreateRecommendations(steamService *steam.ScrapingService, tasteProfile map
 					tagWeightTotal += float64(tag.Weight)
 				}
 			}
-			if tagWeightTotal > 10.0 {
-				continue //outliers that get heavily recommended due to a tag weight > 10, which usually the sign of a broken tag
+			if tagWeightTotal > 11.0 {
+				continue //outliers that get heavily recommended due to a tag weight > 11, which usually the sign of a broken tag
 			}
 
 			if isExcluded || score == 0.0 {
@@ -143,28 +144,27 @@ func CreateTasteProfile(steamService *steam.ScrapingService, profileURL string, 
 			continue
 		}
 
-		multiplier := 1.0
+		playtimeShare := float64(playtime) / float64(totalPlaytime)
+		playtimeMultiplier := math.Log1p(playtimeShare*100) / math.Log1p(100)
 
 		if _, exists := prioritizedGamesSet[gameID]; exists {
-			multiplier += 0.5
+			playtimeMultiplier += 0.3
 		}
-
-		multiplier += (float64(playtime) / float64(totalPlaytime) * 2)
 
 		gameTagWeights := tags.GetBaseTagWeights(gameID)
 
 		for tag, weight := range gameTagWeights {
 			if weight > 0 && weight <= 1 { //filters out broken tags
 				category := tagCategories[tag]
-				multiplier += tagCategoryWeights[category]
-				userTagWeights[tag] += weight * multiplier
+				tagMultiplier := tagCategoryWeights[category] * weight
+				userTagWeights[tag] += playtimeMultiplier * tagMultiplier
 			}
 		}
 	}
 
 	if settings.RandomizationFactor > 0 {
 		for tag := range userTagWeights {
-			noise := 1.0 + (settings.RandomizationFactor)*(rand.Float64()*2.0-1.0)*3
+			noise := 1.0 + settings.RandomizationFactor*(rand.Float64()*2.0-1.0)
 			if noise <= 0 {
 				noise = 0.01 //prevent negative weights
 			}
