@@ -3,7 +3,8 @@ package algorithm
 import (
 	"cmp"
 	"fmt"
-	"math/rand"
+	"math"
+	"math/rand/v2"
 	"slices"
 	"sort"
 	"steamquack/backend/database"
@@ -44,6 +45,7 @@ func CreateRecommendations(steamService *steam.ScrapingService, tasteProfile map
 	result := query.Preload("Tags").FindInBatches(&batchGames, 1000, func(tx *gorm.DB, batch int) error {
 		for _, game := range batchGames {
 			score := 0.0
+			tagWeightTotal := 0.0
 			multiplier := 1.0
 			isExcluded := false
 
@@ -58,7 +60,11 @@ func CreateRecommendations(steamService *steam.ScrapingService, tasteProfile map
 					} else {
 						score += tasteProfile[tag.TagName] * float64(tag.Weight)
 					}
+					tagWeightTotal += float64(tag.Weight)
 				}
+			}
+			if tagWeightTotal > 11.0 {
+				continue //outliers that get heavily recommended due to a tag weight > 11, which usually the sign of a broken tag
 			}
 
 			if isExcluded || score == 0.0 {
@@ -124,6 +130,11 @@ func CreateTasteProfile(steamService *steam.ScrapingService, profileURL string, 
 		prioritizedGamesSet[id] = struct{}{}
 	}
 
+	totalPlaytime := uint32(0)
+	for _, playtime := range gamePlaytimeMap {
+		totalPlaytime += playtime
+	}
+
 	for gameID, playtime := range gamePlaytimeMap {
 		if playtime <= 0 {
 			continue
@@ -133,24 +144,31 @@ func CreateTasteProfile(steamService *steam.ScrapingService, profileURL string, 
 			continue
 		}
 
-		prioritizedWeight := 1.0
-		if _, exists := prioritizedGamesSet[gameID]; exists {
-			prioritizedWeight = 2.0
-		}
+		playtimeShare := float64(playtime) / float64(totalPlaytime)
+		playtimeMultiplier := math.Log1p(playtimeShare*100) / math.Log1p(100)
 
-		baseGameMultiplier := (float64(playtime) / 100.0) * prioritizedWeight
+		if _, exists := prioritizedGamesSet[gameID]; exists {
+			playtimeMultiplier += 0.3
+		}
 
 		gameTagWeights := tags.GetBaseTagWeights(gameID)
 
 		for tag, weight := range gameTagWeights {
 			if weight > 0 && weight <= 1 { //filters out broken tags
 				category := tagCategories[tag]
-				categoryWeight := tagCategoryWeights[category]
-
-				randomizedContribution := 1.0 + settings.RandomizationFactor*(rand.Float64()*2.0-1.0)
-
-				userTagWeights[tag] += weight * baseGameMultiplier * categoryWeight * randomizedContribution
+				tagMultiplier := tagCategoryWeights[category] * weight
+				userTagWeights[tag] += playtimeMultiplier * tagMultiplier
 			}
+		}
+	}
+
+	if settings.RandomizationFactor > 0 {
+		for tag := range userTagWeights {
+			noise := 1.0 + settings.RandomizationFactor*(rand.Float64()*2.0-1.0)
+			if noise <= 0 {
+				noise = 0.01 //prevent negative weights
+			}
+			userTagWeights[tag] *= noise
 		}
 	}
 
