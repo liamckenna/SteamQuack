@@ -120,6 +120,26 @@ func GetUserProfileHandler(steamService *steam.ScrapingService) http.HandlerFunc
 }
 
 func SteamLoginHandler(w http.ResponseWriter, r *http.Request) {
+	frontendOrigin := ""
+
+	if origin := r.Header.Get("Origin"); origin != "" {
+		frontendOrigin = origin
+	} else if referer := r.Header.Get("Referer"); referer != "" {
+		if u, err := url.Parse(referer); err == nil {
+			frontendOrigin = u.Scheme + "://" + u.Host
+		}
+	}
+
+	if strings.HasPrefix(frontendOrigin, "http://localhost:") || strings.HasPrefix(frontendOrigin, "http://127.0.0.1:") {
+		http.SetCookie(w, &http.Cookie{
+			Name:     "frontend_origin",
+			Value:    url.QueryEscape(frontendOrigin),
+			Path:     "/",
+			HttpOnly: true,
+			SameSite: http.SameSiteLaxMode,
+		})
+	}
+
 	params := url.Values{}
 	params.Set("openid.ns", "http://specs.openid.net/auth/2.0")
 	params.Set("openid.mode", "checkid_setup")
@@ -190,7 +210,17 @@ func SteamCallbackHandler(w http.ResponseWriter, r *http.Request) {
 	steamID := matches[1]
 	log.Println("Authenticated SteamID:", steamID)
 
-	http.Redirect(w, r, "http://localhost:5173/?steamid="+steamID, http.StatusFound)
+	frontendOrigin := "http://localhost:5173"
+
+	if cookie, err := r.Cookie("frontend_origin"); err == nil {
+		if decoded, err := url.QueryUnescape(cookie.Value); err == nil {
+			if strings.HasPrefix(decoded, "http://localhost:") || strings.HasPrefix(decoded, "http://127.0.0.1:") {
+				frontendOrigin = decoded
+			}
+		}
+	}
+
+	http.Redirect(w, r, frontendOrigin+"/?steamid="+steamID, http.StatusFound)
 }
 
 func GetSteamAuthUserHandler(steamService *steam.ScrapingService) http.HandlerFunc {
