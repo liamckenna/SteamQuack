@@ -15,14 +15,14 @@ function App() {
     const [settingsText, setSettingsText] = useState(
         JSON.stringify({
             excluded_games: [],
-            excluded_tags: [],
+            excluded_tags: ["NSFW", "Nudity", "Sexual Content"],
             prioritized_games: [],
             prioritized_tags: [],
             prioritize_games_on_sale: false,
             price_floor: 0.0,
             price_ceiling: 100.0,
             review_count_floor: 0,
-            review_count_ceiling: 100000,
+            review_count_ceiling: 100000000,
             review_percentage_floor: 0.0,
             review_percentage_ceiling: 100.0,
             release_year_floor: 1970,
