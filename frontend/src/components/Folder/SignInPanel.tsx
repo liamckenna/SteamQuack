@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import "./SignInPanel.css";
 import SteamLogoImage from "../../assets/images/Steam_icon_logo.png";
 import { useDialogue } from "../../context/DialogueContext";
+import FolderPager from "./FolderPager";
 
 function SearchIcon() {
   return <span className="signin-panel__search-icon">⌕</span>;
@@ -132,8 +133,8 @@ export default function SignInPanel() {
   }
 
   if (steamID) {
-    return (
-      <div className="signin-panel">
+    const pages = [
+      <div className="signin-panel__welcome-page" key="welcome">
         <div className="signin-panel__welcome">
           <h2 className="signin-panel__welcome-title">
             {isLoadingProfile
@@ -142,6 +143,15 @@ export default function SignInPanel() {
           </h2>
 
           <p className="signin-panel__welcome-subtitle">Steam ID: {steamID}</p>
+        </div>
+      </div>,
+
+      <div className="signin-panel__signout-page" key="signout">
+        <div className="signin-panel__welcome">
+          <h2 className="signin-panel__welcome-title">Account</h2>
+          <p className="signin-panel__welcome-subtitle">
+            You are currently signed in as {steamName ?? "Steam user"}.
+          </p>
 
           <button
             type="button"
@@ -151,6 +161,12 @@ export default function SignInPanel() {
             Sign out
           </button>
         </div>
+      </div>,
+    ];
+
+    return (
+      <div className="signin-panel signin-panel--paged">
+        <FolderPager pages={pages} />
       </div>
     );
   }
