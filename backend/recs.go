@@ -118,6 +118,9 @@ func recommendationsHandler(w http.ResponseWriter, r *http.Request) {
 		ownedGameIDs = append(ownedGameIDs, ownedGames.Response.Games[game].AppID)
 	}
 
+	// add excluded games to count as owned game to filter them out
+	ownedGameIDs = append(ownedGameIDs, settings.ExcludedGames...)
+
 	userTasteProfile := algorithm.CreateTasteProfile(steamService, steamID, settings)
 
 	topGames := algorithm.CreateRecommendations(steamService, userTasteProfile, ownedGameIDs, settings)
