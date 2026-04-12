@@ -15,6 +15,7 @@ export type PreferencesState = {
   excludedTags: string[];
   prioritizedGames: number[];
   excludedGames: number[];
+  randomizationFactor: number;
 };
 
 export type TabId = "signin" | "diagnostics" | "preferences" | "prescription";
@@ -37,7 +38,8 @@ export default function Folder() {
     prioritizedTags: [],
     excludedTags: [],
     prioritizedGames: [],
-    excludedGames: []
+    excludedGames: [],
+    randomizationFactor: 0.1
   });
 
   return (
@@ -63,7 +65,11 @@ export default function Folder() {
             setPreferences={setPreferences} 
           />
         )}
-        {activeTab === "prescription" && <PrescriptionPanel />}
+        {activeTab === "prescription" && (
+          <PrescriptionPanel 
+            preferences={preferences} 
+          />
+        )}
       </div>
     </div>
   );

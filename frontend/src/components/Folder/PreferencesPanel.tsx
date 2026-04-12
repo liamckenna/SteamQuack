@@ -78,7 +78,8 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
       prioritizedTags: [],
       excludedTags: [],
       prioritizedGames: [],
-      excludedGames: []
+      excludedGames: [],
+      randomizationFactor: 0.1
     });
     
     setPrioritizeTagSearch("");
@@ -93,6 +94,26 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
         <h3 className="preferences-panel__heading">Recommendation Settings</h3>
         
         <div className="preferences-panel__sliders">
+          {/* Randomizer Range*/}
+          <div className="preferences-panel__field" style={{ marginBottom: "12px" }}>
+            <div className="preferences-panel__row">
+              <span className="preferences-panel__label">Randomization Factor</span>
+              <span className="preferences-panel__range-val">
+                {Math.round(preferences.randomizationFactor * 100)}%
+              </span>
+            </div>
+            <div className="preferences-panel__slider-row">
+              <Slider
+                min={0}
+                max={1}
+                step={0.05}
+                value={preferences.randomizationFactor}
+                onChange={(val) => updatePref("randomizationFactor", val as number)}
+                styles={sliderStyles}
+              />
+            </div>
+          </div>
+
           {/* Price range */}
           <div className="preferences-panel__field">
             <div className="preferences-panel__row">
@@ -209,21 +230,34 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
               </div>
               {showPrioritizeTagsDropdown && (
                 <div className="preferences-panel__dropdown">
-                  {allTags.filter(tag => 
-                    tag.toLowerCase().includes(prioritizeTagSearch.toLowerCase())
-                  ).map(tag => (
-                    <label key={tag} className="preferences-panel__tag-checkbox">
-                      <input 
-                        type="checkbox" 
-                        checked={preferences.prioritizedTags.includes(tag)}
-                        onChange={(e) => {
-                          if (e.target.checked) updatePref("prioritizedTags", [...preferences.prioritizedTags, tag]);
-                          else updatePref("prioritizedTags", preferences.prioritizedTags.filter(t => t !== tag));
-                        }}
-                      />
-                      {tag}
-                    </label>
-                  ))}
+                  <div className="preferences-panel__tag-list-static">
+                    {preferences.prioritizedTags.map(tag => (
+                      <label key={`sel-${tag}`} className="preferences-panel__tag-checkbox">
+                        <input 
+                          type="checkbox" 
+                          checked
+                          onChange={() => updatePref("prioritizedTags", preferences.prioritizedTags.filter(t => t !== tag))}
+                        />
+                        {tag}
+                      </label>
+                    ))}
+                    {allTags
+                      .filter(tag => !preferences.prioritizedTags.includes(tag))
+                      .filter(tag => tag.toLowerCase().includes(prioritizeTagSearch.toLowerCase()))
+                      .sort((a, b) => a.localeCompare(b))
+                      .map(tag => (
+                        <label key={tag} className="preferences-panel__tag-checkbox">
+                          <input 
+                            type="checkbox" 
+                            checked={false}
+                            onChange={(e) => {
+                              if (e.target.checked) updatePref("prioritizedTags", [...preferences.prioritizedTags, tag]);
+                            }}
+                          />
+                          {tag}
+                        </label>
+                    ))}
+                  </div>
                   {allTags.filter(tag => tag.toLowerCase().includes(prioritizeTagSearch.toLowerCase())).length === 0 && (
                     <span className="preferences-panel__no-results">No tags found</span>
                   )}
@@ -250,21 +284,34 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
               </div>
               {showExcludeTagsDropdown && (
                 <div className="preferences-panel__dropdown">
-                  {allTags.filter(tag => 
-                    tag.toLowerCase().includes(excludeTagSearch.toLowerCase())
-                  ).map(tag => (
-                    <label key={tag} className="preferences-panel__tag-checkbox">
-                      <input 
-                        type="checkbox" 
-                        checked={preferences.excludedTags.includes(tag)}
-                        onChange={(e) => {
-                          if (e.target.checked) updatePref("excludedTags", [...preferences.excludedTags, tag]);
-                          else updatePref("excludedTags", preferences.excludedTags.filter(t => t !== tag));
-                        }}
-                      />
-                      {tag}
-                    </label>
-                  ))}
+                  <div className="preferences-panel__tag-list-static">
+                    {preferences.excludedTags.map(tag => (
+                      <label key={`sel-${tag}`} className="preferences-panel__tag-checkbox">
+                        <input 
+                          type="checkbox" 
+                          checked
+                          onChange={() => updatePref("excludedTags", preferences.excludedTags.filter(t => t !== tag))}
+                        />
+                        {tag}
+                      </label>
+                    ))}
+                    {allTags
+                      .filter(tag => !preferences.excludedTags.includes(tag))
+                      .filter(tag => tag.toLowerCase().includes(excludeTagSearch.toLowerCase()))
+                      .sort((a, b) => a.localeCompare(b))
+                      .map(tag => (
+                        <label key={tag} className="preferences-panel__tag-checkbox">
+                          <input 
+                            type="checkbox" 
+                            checked={false}
+                            onChange={(e) => {
+                              if (e.target.checked) updatePref("excludedTags", [...preferences.excludedTags, tag]);
+                            }}
+                          />
+                          {tag}
+                        </label>
+                    ))}
+                  </div>
                   {allTags.filter(tag => tag.toLowerCase().includes(excludeTagSearch.toLowerCase())).length === 0 && (
                     <span className="preferences-panel__no-results">No tags found</span>
                   )}
@@ -294,22 +341,36 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
               </div>
               {showPrioritizeGamesDropdown && (
                 <div className="preferences-panel__dropdown">
-                  {allGames.filter(game => 
-                    game.name.toLowerCase().includes(prioritizeGameSearch.toLowerCase()) || 
-                    game.id.toString().includes(prioritizeGameSearch)
-                  ).map(game => (
-                    <label key={game.id} className="preferences-panel__tag-checkbox">
-                      <input 
-                        type="checkbox" 
-                        checked={preferences.prioritizedGames.includes(game.id)}
-                        onChange={(e) => {
-                          if (e.target.checked) updatePref("prioritizedGames", [...preferences.prioritizedGames, game.id]);
-                          else updatePref("prioritizedGames", preferences.prioritizedGames.filter(id => id !== game.id));
-                        }}
-                      />
-                      {game.name}
-                    </label>
-                  ))}
+                  <div className="preferences-panel__tag-list-static">
+                    {allGames
+                      .filter(game => preferences.prioritizedGames.includes(game.id))
+                      .map(game => (
+                        <label key={`sel-${game.id}`} className="preferences-panel__tag-checkbox">
+                          <input 
+                            type="checkbox" 
+                            checked
+                            onChange={() => updatePref("prioritizedGames", preferences.prioritizedGames.filter(id => id !== game.id))}
+                          />
+                          {game.name}
+                        </label>
+                      ))}
+                    {allGames
+                      .filter(game => !preferences.prioritizedGames.includes(game.id))
+                      .filter(game => game.name.toLowerCase().includes(prioritizeGameSearch.toLowerCase()) || game.id.toString().includes(prioritizeGameSearch))
+                      .sort((a, b) => a.name.localeCompare(b.name))
+                      .map(game => (
+                        <label key={game.id} className="preferences-panel__tag-checkbox">
+                          <input 
+                            type="checkbox" 
+                            checked={false}
+                            onChange={(e) => {
+                              if (e.target.checked) updatePref("prioritizedGames", [...preferences.prioritizedGames, game.id]);
+                            }}
+                          />
+                          {game.name}
+                        </label>
+                    ))}
+                  </div>
                   {allGames.filter(game => game.name.toLowerCase().includes(prioritizeGameSearch.toLowerCase()) || game.id.toString().includes(prioritizeGameSearch)).length === 0 && (
                     <span className="preferences-panel__no-results">No games found</span>
                   )}
@@ -336,22 +397,36 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
               </div>
               {showExcludeGamesDropdown && (
                 <div className="preferences-panel__dropdown">
-                  {allGames.filter(game => 
-                    game.name.toLowerCase().includes(excludeGameSearch.toLowerCase()) || 
-                    game.id.toString().includes(excludeGameSearch)
-                  ).map(game => (
-                    <label key={game.id} className="preferences-panel__tag-checkbox">
-                      <input 
-                        type="checkbox" 
-                        checked={preferences.excludedGames.includes(game.id)}
-                        onChange={(e) => {
-                          if (e.target.checked) updatePref("excludedGames", [...preferences.excludedGames, game.id]);
-                          else updatePref("excludedGames", preferences.excludedGames.filter(id => id !== game.id));
-                        }}
-                      />
-                      {game.name}
-                    </label>
-                  ))}
+                  <div className="preferences-panel__tag-list-static">
+                    {allGames
+                      .filter(game => preferences.excludedGames.includes(game.id))
+                      .map(game => (
+                        <label key={`sel-${game.id}`} className="preferences-panel__tag-checkbox">
+                          <input 
+                            type="checkbox" 
+                            checked
+                            onChange={() => updatePref("excludedGames", preferences.excludedGames.filter(id => id !== game.id))}
+                          />
+                          {game.name}
+                        </label>
+                      ))}
+                    {allGames
+                      .filter(game => !preferences.excludedGames.includes(game.id))
+                      .filter(game => game.name.toLowerCase().includes(excludeGameSearch.toLowerCase()) || game.id.toString().includes(excludeGameSearch))
+                      .sort((a, b) => a.name.localeCompare(b.name))
+                      .map(game => (
+                        <label key={game.id} className="preferences-panel__tag-checkbox">
+                          <input 
+                            type="checkbox" 
+                            checked={false}
+                            onChange={(e) => {
+                              if (e.target.checked) updatePref("excludedGames", [...preferences.excludedGames, game.id]);
+                            }}
+                          />
+                          {game.name}
+                        </label>
+                    ))}
+                  </div>
                   {allGames.filter(game => game.name.toLowerCase().includes(excludeGameSearch.toLowerCase()) || game.id.toString().includes(excludeGameSearch)).length === 0 && (
                     <span className="preferences-panel__no-results">No games found</span>
                   )}
