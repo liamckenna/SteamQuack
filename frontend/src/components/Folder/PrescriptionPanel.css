@@ -79,7 +79,7 @@
 .prescription-panel__grid {
   flex: 1;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(3, minmax(140px, 1fr));
   gap: 16px;
   align-content: start;
   overflow: auto;
@@ -90,12 +90,12 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  padding: 0;
+  padding: 10;
   border: none;
   border-radius: 8px;
   background: transparent;
   cursor: pointer;
-  text-align: left;
+  text-align: center;
   transition: transform 0.15s, box-shadow 0.15s;
 }
 
@@ -146,7 +146,7 @@
   border-radius: 4px;
   background: #059669;
   color: #fff;
-  font-size: 0.75rem;
+  font-size: 1rem;
   font-weight: 600;
 }
 

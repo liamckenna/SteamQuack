@@ -13,27 +13,27 @@ export const GameTile = ({ game }: GameTileProps) => {
 
   return (
     <button
-      style={{
-        padding: '10px'
-      }}
+      className="prescription-panel__card"
       type="button"
-      className="game-tile-btn"
       onClick={() => { window.alert(
         game.name + "\n" +
         "$" + game.current_price + "\n" +
         (new Date(game.release_date_unix * 1000)).toLocaleDateString() + "\n" +
-        game.review_percentage + "% (" + game.review_count + ")" + "\n" +
+        Math.round(game.review_percentage) + "% (" + game.review_count + ")" + "\n" +
         "[DEBUG] Score: " + game.score
       ) }}
     >
-      <p>{discountPercent == 0 && (
-        "\u200B"
-      )}</p>
-      <p style={{ color: '#66FF00' }}>{discountPercent != 0 && (
-        "-" + String(discountPercent) + "%"
-      )}</p>
-      <img src={imageUrl} width="90%"/>
-      <p>{game.name}</p>
+      <div className="prescription-panel__card-cover">
+        {discountPercent != 0 && (
+          <div className="prescription-panel__card-badge">
+            {"-" + String(discountPercent) + "%"}
+          </div>
+        )}
+        <img src={imageUrl}/>
+      </div>
+      <div className="prescription-panel__card-title">
+        <p>{game.name}</p>
+      </div>
     </button>
   );
 };
@@ -109,23 +109,17 @@ export default function PrescriptionPanel({ preferences }: PrescriptionPanelProp
   if (error) return <div>{error}</div>;
   if (recommendations.length === 0) return <div>No recommendations found.</div>;
 
-  // Render the grid
+  // Render the component
   return (
-    <div
-      className="prescription-panel"
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-        gap: '10px',
-        padding: '10px'
-      }}
-    >
-      {recommendations.map((game) => (
-        <GameTile
-          key={game.game_id}
-          game={game}
-        />
-      ))}
+    <div className="prescription-panel">
+      <div className="prescription-panel__grid">
+        {recommendations.map((game) => (
+          <GameTile
+            key={game.game_id}
+            game={game}
+          />
+        ))}
+      </div>
     </div>
   );
 };
