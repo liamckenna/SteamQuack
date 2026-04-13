@@ -9,30 +9,32 @@ interface GameTileProps {
 // GameTile component
 export const GameTile = ({ game }: GameTileProps) => {
   const imageUrl = `https://steamcdn-a.akamaihd.net/steam/apps/${game.game_id}/header.jpg`;
+  const discountPercent = (game.initial_price != game.current_price) ? Math.round((game.initial_price - game.current_price) / game.initial_price * 100) : 0;
 
   return (
-    <div>
-      <img src={imageUrl} width="50%"/>
-      <div>
-        <h3>{game.name}</h3>
-        <div 
-          dangerouslySetInnerHTML={{ __html: game.description }}
-        />
-        {game.initial_price != game.current_price && (
-          <p><s>${String(game.initial_price)}</s></p>
-        )}
-        <p>${String(game.current_price)}</p>
-        <p>Release Date: {(new Date(game.release_date_unix * 1000)).toLocaleDateString()}</p>
-        <p>Review Score: {game.review_percentage}% ({game.review_count})</p>
-      </div>
-      <button
-        type="button"
-        className="visit-store-page-btn"
-        onClick={() => { window.open("https://store.steampowered.com/app/" + game.game_id, "_blank", "noopener,noreferrer") }}
-      >
-        <span>Visit store page</span>
-      </button>
-    </div>
+    <button
+      style={{
+        padding: '10px'
+      }}
+      type="button"
+      className="game-tile-btn"
+      onClick={() => { window.alert(
+        game.name + "\n" +
+        "$" + game.current_price + "\n" +
+        (new Date(game.release_date_unix * 1000)).toLocaleDateString() + "\n" +
+        game.review_percentage + "% (" + game.review_count + ")" + "\n" +
+        "[DEBUG] Score: " + game.score
+      ) }}
+    >
+      <p>{discountPercent == 0 && (
+        "\u200B"
+      )}</p>
+      <p style={{ color: '#66FF00' }}>{discountPercent != 0 && (
+        "-" + String(discountPercent) + "%"
+      )}</p>
+      <img src={imageUrl} width="90%"/>
+      <p>{game.name}</p>
+    </button>
   );
 };
 
@@ -78,7 +80,15 @@ export default function PrescriptionPanel() {
 
   // Render the grid
   return (
-    <div className="prescription-panel">
+    <div
+      className="prescription-panel"
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+        gap: '10px',
+        padding: '10px'
+      }}
+    >
       {recommendations.map((game) => (
         <GameTile
           key={game.game_id}
