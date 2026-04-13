@@ -22,7 +22,7 @@ type GameScore struct {
 	Name   string
 }
 
-func CreateRecommendations(steamService *steam.ScrapingService, tasteProfile map[string]float64, excludedGames []uint32, settings steam.Settings) []GameScore {
+func CreateRecommendations(steamService *steam.ScrapingService, tasteProfile map[string]float64, settings steam.Settings) []GameScore {
 
 	db := database.GetDB()
 	gameScores := make(map[uint32]GameScore)
@@ -34,11 +34,8 @@ func CreateRecommendations(steamService *steam.ScrapingService, tasteProfile map
 		Where("current_price >= ? AND current_price <= ?", settings.PriceFloor, settings.PriceCeiling).
 		Where("review_count >= ? AND review_count <= ?", settings.ReviewCountFloor, settings.ReviewCountCeiling).
 		Where("review_percentage >= ? AND review_percentage <= ?", settings.ReviewPercentageFloor, settings.ReviewPercentageCeiling).
-		Where("release_date >= ? AND release_date <= ?", startYear, endYear)
-
-	if len(excludedGames) > 0 {
-		query = query.Where("app_id NOT IN ?", excludedGames)
-	}
+		Where("release_date >= ? AND release_date <= ?", startYear, endYear).
+		Where("app_id NOT IN ?", settings.ExcludedGames)
 
 	var batchGames []models.Game
 
@@ -55,19 +52,11 @@ func CreateRecommendations(steamService *steam.ScrapingService, tasteProfile map
 						isExcluded = true
 						break
 					}
-					if exists := slices.Contains(settings.PrioritizedTags, tag.TagName); exists {
-						score += tasteProfile[tag.TagName] * float64(tag.Weight) * 2
-					} else {
-						score += tasteProfile[tag.TagName] * float64(tag.Weight)
-					}
+					score += tasteProfile[tag.TagName] * float64(tag.Weight)
 					tagWeightTotal += float64(tag.Weight)
 				}
 			}
-			if tagWeightTotal > 11.0 {
-				continue //outliers that get heavily recommended due to a tag weight > 11, which usually the sign of a broken tag
-			}
-
-			if isExcluded || score == 0.0 {
+			if tagWeightTotal > 11.0 || isExcluded || score == 0.0 {
 				continue
 			}
 
@@ -159,6 +148,12 @@ func CreateTasteProfile(steamService *steam.ScrapingService, profileURL string, 
 				tagMultiplier := tagCategoryWeights[category] * weight
 				userTagWeights[tag] += playtimeMultiplier * tagMultiplier
 			}
+		}
+	}
+
+	for tag := range userTagWeights {
+		if exists := slices.Contains(settings.PrioritizedTags, tag); exists {
+			userTagWeights[tag] *= 2
 		}
 	}
 

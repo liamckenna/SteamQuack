@@ -73,13 +73,13 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
       priceRange: [0, 100],
       reviewRange: [0, 100],
       releaseYearRange: [1970, new Date().getFullYear()],
-      reviewCountRange: [0, 100000],
+      reviewCountRange: [0, 10000000],
       prioritizeSale: false,
       prioritizedTags: [],
-      excludedTags: [],
+      excludedTags: ["NSFW", "Nudity", "Sexual Content"],
       prioritizedGames: [],
       excludedGames: [],
-      randomizationFactor: 0.1
+      randomizationFactor: 0.0
     });
     
     setPrioritizeTagSearch("");
@@ -94,26 +94,6 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
         <h3 className="preferences-panel__heading">Recommendation Settings</h3>
         
         <div className="preferences-panel__sliders">
-          {/* Randomizer Range*/}
-          <div className="preferences-panel__field" style={{ marginBottom: "12px" }}>
-            <div className="preferences-panel__row">
-              <span className="preferences-panel__label">Randomization Factor</span>
-              <span className="preferences-panel__range-val">
-                {Math.round(preferences.randomizationFactor * 100)}%
-              </span>
-            </div>
-            <div className="preferences-panel__slider-row">
-              <Slider
-                min={0}
-                max={1}
-                step={0.05}
-                value={preferences.randomizationFactor}
-                onChange={(val) => updatePref("randomizationFactor", val as number)}
-                styles={sliderStyles}
-              />
-            </div>
-          </div>
-
           {/* Price range */}
           <div className="preferences-panel__field">
             <div className="preferences-panel__row">
@@ -126,7 +106,7 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
               <Slider
                 range
                 min={0}
-                max={200}
+                max={100}
                 value={preferences.priceRange}
                 onChange={(val) => updatePref("priceRange", val as [number, number])}
                 styles={sliderStyles}
@@ -179,17 +159,37 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
             <div className="preferences-panel__row">
               <span className="preferences-panel__label">Total Reviews</span>
               <span className="preferences-panel__range-val">
-                {preferences.reviewCountRange[0]} - {preferences.reviewCountRange[1] > 99999 ? "100k+" : preferences.reviewCountRange[1]}
+                {preferences.reviewCountRange[0]} - {preferences.reviewCountRange[1] > 9999999 ? "1m+" : preferences.reviewCountRange[1]}
               </span>
             </div>
             <div className="preferences-panel__slider-row">
               <Slider
                 range
                 min={0}
-                max={100000}
+                max={10000000}
                 step={1000}
                 value={preferences.reviewCountRange}
                 onChange={(val) => updatePref("reviewCountRange", val as [number, number])}
+                styles={sliderStyles}
+              />
+            </div>
+          </div>
+
+          {/* Randomizer Range*/}
+          <div className="preferences-panel__field" style={{ marginBottom: "12px" }}>
+            <div className="preferences-panel__row">
+              <span className="preferences-panel__label">Randomization Factor</span>
+              <span className="preferences-panel__range-val">
+                {Math.round(preferences.randomizationFactor * 100)}%
+              </span>
+            </div>
+            <div className="preferences-panel__slider-row">
+              <Slider
+                min={0}
+                max={1}
+                step={0.05}
+                value={preferences.randomizationFactor}
+                onChange={(val) => updatePref("randomizationFactor", val as number)}
                 styles={sliderStyles}
               />
             </div>

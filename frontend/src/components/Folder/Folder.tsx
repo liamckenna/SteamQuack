@@ -33,13 +33,13 @@ export default function Folder() {
     priceRange: [0, 100],
     reviewRange: [0, 100],
     releaseYearRange: [1970, new Date().getFullYear()],
-    reviewCountRange: [0, 100000],
+    reviewCountRange: [0, 10000000],
     prioritizeSale: false,
     prioritizedTags: [],
-    excludedTags: [],
+    excludedTags: ["NSFW", "Nudity", "Sexual Content"],
     prioritizedGames: [],
     excludedGames: [],
-    randomizationFactor: 0.1
+    randomizationFactor: 0.0
   });
 
   return (
