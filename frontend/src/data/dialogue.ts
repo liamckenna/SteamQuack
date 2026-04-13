@@ -68,6 +68,22 @@ const dialogues: Record<string, DialogueVariant[]> = {
             ]
         }
     ],
+    generalPrescription: [
+        {
+            lines: [
+                "after looking at your charts, i hav come too the conclushun that you are in need of a new game!",
+                "hear are sum i think you mite injoy.",
+            ]
+        }
+    ],
+    generalPreferences: [
+        {
+            lines: [
+                "let me heer moar about wat your looking fore.",
+                "youse this paige to set your prefrenses, and ill use them to assist me in my diagnosis and prescription.",
+            ]
+        }
+    ]
 };
 
 export default dialogues;

@@ -1,6 +1,7 @@
 import "./PrescriptionPanel.css";
 import { useState, useEffect } from 'react';
 import { getRecommendations, type Recommendation } from "../../api";
+import { useDialogue } from "../../context/DialogueContext";
 
 interface GameTileProps {
   game_id: number;
@@ -53,6 +54,7 @@ export default function PrescriptionPanel({ preferences }: PrescriptionPanelProp
   const [error, setError] = useState<string | null>(null);
   const queryParams = new URLSearchParams(window.location.search);
   const userID = queryParams.get('steamid');
+  const { startDialogue } = useDialogue();
 
   if (!userID) return <div>Please sign in first.</div>;
 
@@ -83,6 +85,7 @@ export default function PrescriptionPanel({ preferences }: PrescriptionPanelProp
 
         const response = await getRecommendations(userID, backendSettings);
         setRecommendations(response.recommendations || []);
+        startDialogue("generalPrescription");
       } catch (err) {
         console.error("Error fetching recommendations:", err);
         setError("Failed to load game recommendations.");

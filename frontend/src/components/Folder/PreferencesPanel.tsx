@@ -4,6 +4,7 @@ import "rc-slider/assets/index.css";
 import "./PreferencesPanel.css";
 import { getPreferencesOptions } from "../../api";
 import type { PreferencesState } from "./Folder";
+import { useDialogue } from "../../context/DialogueContext";
 
 type GameOption = { id: number; name: string };
 
@@ -15,6 +16,7 @@ type PreferencesPanelProps = {
 export default function PreferencesPanel({ preferences, setPreferences }: PreferencesPanelProps) {
   const [allTags, setAllTags] = useState<string[]>([]);
   const [allGames, setAllGames] = useState<GameOption[]>([]);
+  const { startDialogue } = useDialogue();
 
   // load from backend on mount
   useEffect(() => {
@@ -28,6 +30,10 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
       }
     }
     loadOptions();
+  }, []);
+
+  useEffect(() => {
+    startDialogue("generalPreferences");
   }, []);
 
   // update helper functions mapped to parent state
@@ -90,9 +96,7 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
 
   return (
     <div className="preferences-panel">
-      <div className="preferences-panel__section">
-        <h3 className="preferences-panel__heading">Recommendation Settings</h3>
-        
+      <div className="preferences-panel__section">        
         <div className="preferences-panel__sliders">
           {/* Price range */}
           <div className="preferences-panel__field">
@@ -209,7 +213,6 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
 
       {/* Filter/Prioritize games/tags section */}
       <div className="preferences-panel__section" ref={containerRef}>
-         <h3 className="preferences-panel__heading">Tags & Games</h3>
          <div className="preferences-panel__two-col">
             <div className="preferences-panel__field" style={{ position: "relative" }}>
               <span className="preferences-panel__label">Prioritize Tags</span>
