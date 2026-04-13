@@ -38,8 +38,23 @@ export const GameTile = ({ game }: GameTileProps) => {
   );
 };
 
+export type PrescriptionPanelProps = {
+  preferences: {
+    priceRange: [number, number];
+    reviewRange: [number, number];
+    releaseYearRange: [number, number];
+    reviewCountRange: [number, number];
+    prioritizeSale: boolean;
+    prioritizedTags: string[];
+    excludedTags: string[];
+    prioritizedGames: number[];
+    excludedGames: number[];
+    randomizationFactor: number;
+  };
+};
+
 // PrescriptionPanel component
-export default function PrescriptionPanel() {
+export default function PrescriptionPanel({ preferences }: PrescriptionPanelProps) {
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,9 +70,25 @@ export default function PrescriptionPanel() {
       setError(null);
       
       try {
-        // Call backend API
-        const settings: Record<string, any> = {}; // No settings for now
-        const response = await getRecommendations(userID, settings);
+        // maps slider/search values back into backend json
+        const backendSettings = {
+           price_floor: preferences.priceRange[0],
+           price_ceiling: preferences.priceRange[1],
+           review_percentage_floor: preferences.reviewRange[0],
+           review_percentage_ceiling: preferences.reviewRange[1],
+           release_year_floor: preferences.releaseYearRange[0],
+           release_year_ceiling: preferences.releaseYearRange[1],
+           review_count_floor: preferences.reviewCountRange[0],
+           review_count_ceiling: preferences.reviewCountRange[1],
+           prioritize_games_on_sale: preferences.prioritizeSale,
+           prioritized_tags: preferences.prioritizedTags,
+           excluded_tags: preferences.excludedTags,
+           prioritized_games: preferences.prioritizedGames,
+           excluded_games: preferences.excludedGames,
+           randomization_factor: preferences.randomizationFactor,
+        };
+
+        const response = await getRecommendations(userID, backendSettings);
         setRecommendations(response.recommendations || []);
       } catch (err) {
         console.error("Error fetching recommendations:", err);
@@ -71,7 +102,7 @@ export default function PrescriptionPanel() {
     if (userID) {
       fetchRecommendations();
     }
-  }, [userID]); // The effect re-runs if userID changes
+  }, [userID, preferences]); // The effect re-runs if userID changes or if preferences change
 
   // Handle loading and error states
   if (isLoading) return <div>Loading your recommendations...</div>;

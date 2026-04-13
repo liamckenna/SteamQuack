@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import "./SignInPanel.css";
 import SteamLogoImage from "../../assets/images/Steam_icon_logo.png";
+import { useDialogue } from "../../context/DialogueContext";
+import FolderPager from "./FolderPager";
 
 function SearchIcon() {
   return <span className="signin-panel__search-icon">⌕</span>;
@@ -48,6 +50,7 @@ export default function SignInPanel() {
   const [steamID, setSteamID] = useState<string | null>(null);
   const [steamName, setSteamName] = useState<string | null>(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
+  const { startDialogue } = useDialogue();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -67,6 +70,7 @@ export default function SignInPanel() {
       })
       .then((data) => {
         setSteamName(data.user.persona_name);
+        startDialogue("signInSuccess");
       })
       .catch((err) => {
         console.error(err);
@@ -111,9 +115,10 @@ export default function SignInPanel() {
         throw new Error("No steam_id returned from profile parse");
       }
 
-      window.location.href = `http://localhost:5173/?steamid=${resolvedSteamID}`;
+      window.location.href = `${window.location.origin}/?steamid=${resolvedSteamID}`;
     } catch (err) {
       console.error("Textbox search failed:", err);
+      startDialogue("signInFailure");
       alert(err instanceof Error ? err.message : "Textbox search failed");
     }
   }
@@ -121,9 +126,15 @@ export default function SignInPanel() {
     window.location.href = "http://localhost:8080/auth/steam/login";
   }
 
+  function onSignOut() {
+    const url = new URL(window.location.href);
+    url.searchParams.delete("steamid");
+    window.location.href = url.pathname + url.search;
+  }
+
   if (steamID) {
-    return (
-      <div className="signin-panel">
+    const pages = [
+      <div className="signin-panel__welcome-page" key="welcome">
         <div className="signin-panel__welcome">
           <h2 className="signin-panel__welcome-title">
             {isLoadingProfile
@@ -133,6 +144,29 @@ export default function SignInPanel() {
 
           <p className="signin-panel__welcome-subtitle">Steam ID: {steamID}</p>
         </div>
+      </div>,
+
+      <div className="signin-panel__signout-page" key="signout">
+        <div className="signin-panel__welcome">
+          <h2 className="signin-panel__welcome-title">Account</h2>
+          <p className="signin-panel__welcome-subtitle">
+            You are currently signed in as {steamName ?? "Steam user"}.
+          </p>
+
+          <button
+            type="button"
+            className="signin-panel__signout-btn"
+            onClick={onSignOut}
+          >
+            Sign out
+          </button>
+        </div>
+      </div>,
+    ];
+
+    return (
+      <div className="signin-panel signin-panel--paged">
+        <FolderPager pages={pages} />
       </div>
     );
   }

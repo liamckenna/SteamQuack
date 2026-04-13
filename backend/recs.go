@@ -12,7 +12,7 @@ import (
 
 type RecommendationRequest struct {
 	Profile  string         `json:"profile"`
-	Settings map[string]any `json:"settings"`
+	Settings steam.Settings `json:"settings"`
 }
 
 type Recommendation struct {
@@ -42,7 +42,6 @@ func recommendationsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	steamID := req.Profile
-	//error testing here
 
 	cfg := config.LoadConfig()
 	db := database.GetDB()
@@ -55,15 +54,15 @@ func recommendationsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	excludedGames := make([]uint32, 0, len(ownedGames.Response.Games))
+	settings := req.Settings
+
+	userTasteProfile := algorithm.CreateTasteProfile(steamService, steamID, settings)
 
 	for game := range ownedGames.Response.Games {
-		excludedGames = append(excludedGames, ownedGames.Response.Games[game].AppID)
+		settings.ExcludedGames = append(settings.ExcludedGames, ownedGames.Response.Games[game].AppID)
 	}
 
-	userTasteProfile := algorithm.CreateTasteProfile(steamService, steamID)
-
-	topGames := algorithm.CreateRecommendations(steamService, userTasteProfile, excludedGames, req.Settings)
+	topGames := algorithm.CreateRecommendations(steamService, userTasteProfile, settings)
 
 	recommendations := make([]Recommendation, 0, len(topGames))
 	for _, gameScore := range topGames {

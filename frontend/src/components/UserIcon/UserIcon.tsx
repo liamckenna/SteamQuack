@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import "./UserIcon.css";
-import DefaultIcon from "../../assets/images/Sample Profile Icon.jpg";
+import DefaultIcon from "../../assets/images/steam_default.png";
 
 type SteamAuthUserResponse = {
   user: {

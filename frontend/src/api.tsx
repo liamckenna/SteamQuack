@@ -65,3 +65,16 @@ export async function getRecommendations(
 
   return (await res.json()) as RecommendationResponse;
 }
+
+export type PreferencesOptionsResponse = {
+  tags: string[];
+  games: { id: number; name: string }[];
+};
+
+export async function getPreferencesOptions(): Promise<PreferencesOptionsResponse> {
+  const res = await fetch("/api/preferences/options");
+  if (!res.ok) {
+    throw new Error(`getPreferencesOptions failed: ${res.status}`);
+  }
+  return (await res.json()) as PreferencesOptionsResponse;
+}
