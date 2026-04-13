@@ -4,31 +4,38 @@ import { getRecommendations, type Recommendation } from "../../api";
 import { useDialogue } from "../../context/DialogueContext";
 
 interface GameTileProps {
-  game_id: number;
-  score: number;
-  name: string;
-  description: string;
+  game: Recommendation;
 };
 
 // GameTile component
-export const GameTile = ({ game_id, score, name, description }: GameTileProps) => {
-  const imageUrl = `https://steamcdn-a.akamaihd.net/steam/apps/${game_id}/header.jpg`;
+export const GameTile = ({ game }: GameTileProps) => {
+  const imageUrl = `https://steamcdn-a.akamaihd.net/steam/apps/${game.game_id}/header.jpg`;
+  const discountPercent = (game.initial_price != game.current_price) ? Math.round((game.initial_price - game.current_price) / game.initial_price * 100) : 0;
 
   return (
-    <div>
-      <img src={imageUrl} width="50%"/>
-      <div>
-        <h3>{name}</h3>
-        <p>{description}</p>
+    <button
+      className="prescription-panel__card"
+      type="button"
+      onClick={() => { window.alert(
+        game.name + "\n" +
+        "$" + game.current_price + "\n" +
+        (new Date(game.release_date_unix * 1000)).toLocaleDateString() + "\n" +
+        Math.round(game.review_percentage) + "% (" + game.review_count + ")" + "\n" +
+        "[DEBUG] Score: " + game.score
+      ) }}
+    >
+      <div className="prescription-panel__card-cover">
+        {discountPercent != 0 && (
+          <div className="prescription-panel__card-badge">
+            {"-" + String(discountPercent) + "%"}
+          </div>
+        )}
+        <img src={imageUrl}/>
       </div>
-      <button
-        type="button"
-        className="visit-store-page-btn"
-        onClick={() => { window.open("https://store.steampowered.com/app/" + game_id, "_blank", "noopener,noreferrer") }}
-      >
-        <span>Visit store page</span>
-      </button>
-    </div>
+      <div className="prescription-panel__card-title">
+        <p>{game.name}</p>
+      </div>
+    </button>
   );
 };
 
@@ -105,18 +112,17 @@ export default function PrescriptionPanel({ preferences }: PrescriptionPanelProp
   if (error) return <div>{error}</div>;
   if (recommendations.length === 0) return <div>No recommendations found.</div>;
 
-  // Render the grid
+  // Render the component
   return (
     <div className="prescription-panel">
-      {recommendations.map((game) => (
-        <GameTile
-          key={game.game_id}
-          game_id={game.game_id}
-          score={100}
-          name={game.name}
-          description={"[Placeholder description]"}
-        />
-      ))}
+      <div className="prescription-panel__grid">
+        {recommendations.map((game) => (
+          <GameTile
+            key={game.game_id}
+            game={game}
+          />
+        ))}
+      </div>
     </div>
   );
 };
