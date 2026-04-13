@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"steamquack/backend/database"
 	"steamquack/backend/models"
-	"strings"
 )
 
 var allTagCategories = []string{
@@ -21,6 +20,22 @@ var allTagCategories = []string{
 	"ratings",
 	"hardware-input",
 	"funding",
+}
+
+var tagCategoryWeights = map[string]float64{
+	"super-genre":         0.125,
+	"genre":               0.75,
+	"sub-genre":           1.0,
+	"visuals & viewpoint": 0.5,
+	"themes & moods":      0.5,
+	"features":            0.25,
+	"players":             0.125,
+	"other":               0.125,
+	"software":            0.125,
+	"assessments":         0.5,
+	"ratings":             0.05,
+	"hardware-input":      0.05,
+	"funding":             0.025,
 }
 
 var allPossibleTags = map[string]string{
@@ -450,7 +465,7 @@ var allPossibleTags = map[string]string{
 	"action rts":            "sub-genre",
 	"party game":            "sub-genre",
 	"dystopian":             "themes & moods",
-	"social deduction":      "themes & moods",
+	"social deduction":      "sub-genre",
 	"well-written":          "assessments",
 	"spaceships":            "themes & moods",
 	"parody":                "themes & moods",
@@ -474,14 +489,14 @@ var allPossibleTags = map[string]string{
 	"escape room":           "features",
 	"puzzle platformer":     "sub-genre",
 	"creature collector":    "sub-genre",
-	"cozy":                  "themes & moods",
-	"fishing":               "themes & moods",
-	"wholesome":             "themes & moods",
+	"cozy":                  "assessments",
+	"fishing":               "sub-genre",
+	"wholesome":             "assessments",
 	"roguelike deckbuilder": "sub-genre",
-	"shop keeper":           "themes & moods",
-	"job simulator":         "genre",
+	"shop keeper":           "sub-genre",
+	"job simulator":         "sub-genre",
 	"extraction shooter":    "sub-genre",
-	"dice":                  "themes & moods",
+	"dice":                  "sub-genre",
 	"boss rush":             "features",
 	"instrumental music":    "features",
 	"elf":                   "themes & moods",
@@ -490,8 +505,8 @@ var allPossibleTags = map[string]string{
 	"8-bit music":           "features",
 	"fox":                   "themes & moods",
 	"electronic":            "themes & moods",
-	"hobby sim":             "genre",
-	"coding":                "sub-genre",
+	"hobby sim":             "sub-genre",
+	"coding":                "features",
 	"volleyball":            "genre",
 	"rugby":                 "genre",
 	"snooker":               "genre",
@@ -1038,6 +1053,9 @@ func GetAllTagCategories() []string {
 	return allTagCategories
 }
 
+func GetTagCategoryWeights() map[string]float64 {
+	return tagCategoryWeights
+}
 func GetAllPossibleTags() map[string]string {
 	return allPossibleTags
 }

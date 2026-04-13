@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import RandomGameDisplay from "../Test/RandomGameDisplay.tsx";
 import { getRecommendations, parseProfile } from "../../api";
-import type { ProfileResult } from "../../api";
+import type { ProfileResult, Recommendation } from "../../api";
 import "./App.css";
 
 function App() {
@@ -13,9 +13,24 @@ function App() {
     const [profileError, setProfileError] = useState<string | null>(null);
 
     const [settingsText, setSettingsText] = useState(
-        JSON.stringify({ genres: ["rpg", "strategy"], maxPrice: 20 }, null, 2),
+        JSON.stringify({
+            excluded_games: [],
+            excluded_tags: ["NSFW", "Nudity", "Sexual Content"],
+            prioritized_games: [],
+            prioritized_tags: [],
+            prioritize_games_on_sale: false,
+            price_floor: 0.0,
+            price_ceiling: 100.0,
+            review_count_floor: 0,
+            review_count_ceiling: 10000000,
+            review_percentage_floor: 0.0,
+            review_percentage_ceiling: 100.0,
+            release_year_floor: 1970,
+            release_year_ceiling: new Date().getFullYear(),
+            randomization_factor: 0.0,
+            }, null, 2)
     );
-    const [recs, setRecs] = useState<{ title: string; reason: string }[]>([]);
+    const [recs, setRecs] = useState<Recommendation[]>([]);
     const [recsLoading, setRecsLoading] = useState(false);
     const [recsError, setRecsError] = useState<string | null>(null);
 
@@ -161,9 +176,9 @@ function App() {
                         {recs.map((r, idx) => (
                             <li key={idx} style={{ marginBottom: 8 }}>
                                 <div>
-                                    <strong>{r.title}</strong>
+                                    <strong>{r.name}</strong>
                                 </div>
-                                <div>{r.reason}</div>
+                                <div>Score: {r.score}</div>
                             </li>
                         ))}
                     </ul>

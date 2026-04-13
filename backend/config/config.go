@@ -10,6 +10,7 @@ type Config struct {
 	SteamAPIKey  string
 	DatabasePath string
 	ServerPort   string
+	FrontendURL string
 }
 
 // LoadConfig loads configuration from environment variables
@@ -23,6 +24,7 @@ func LoadConfig() *Config {
 		SteamAPIKey:  steamAPIKey,
 		DatabasePath: getEnvOrDefault("DATABASE_PATH", "steamquack.db"),
 		ServerPort:   getEnvOrDefault("SERVER_PORT", "8080"),
+		FrontendURL: getEnvOrDefault("FRONTEND_URL", "http://localhost:5173"),
 	}
 }
 

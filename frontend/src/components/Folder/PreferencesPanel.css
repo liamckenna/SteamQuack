@@ -41,8 +41,8 @@
 
 .preferences-panel__slider-row {
   display: flex;
-  gap: 8px;
-  align-items: center;
+  margin-top: 6px;
+  padding: 0 4px;
 }
 
 .preferences-panel__range {
@@ -134,4 +134,56 @@
 .preferences-panel__game-item input[type="checkbox"] {
   width: 16px;
   height: 16px;
+}
+
+.preferences-panel__no-results {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  padding: 4px;
+}
+
+.preferences-panel__dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  background: #1e293b;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 4px;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.preferences-panel__tag-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: #cbd5e1;
+  cursor: pointer;
+}
+
+.preferences-panel__tag-checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #64748b;
+}
+
+.preferences-panel__dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+.preferences-panel__dropdown::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+.preferences-panel__dropdown::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
 }

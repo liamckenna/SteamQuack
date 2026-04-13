@@ -17,14 +17,15 @@ export async function parseProfile(profile: string): Promise<ProfileResult> {
   });
 
   // backend uses 404 for not_found, but still returns JSON
-  const data = (await res.json()) as ProfileResult;
+  const data = await res.json();
 
   // If it's a non-404 error, throw so UI can show a real error state
   if (!res.ok && res.status !== 404) {
-    throw new Error(`parseProfile failed: ${res.status}`);
+    const errorMessage = data.error ? data.error : `parseProfile failed: ${res.status}`;
+    throw new Error(errorMessage);
   }
 
-  return data;
+  return data as ProfileResult;
 }
 
 export type RecommendationRequest = {
@@ -33,8 +34,9 @@ export type RecommendationRequest = {
 };
 
 export type Recommendation = {
-  title: string;
-  reason: string;
+  game_id: number;
+  score: number;
+  name: string;
 };
 
 export type RecommendationResponse = {
@@ -56,4 +58,17 @@ export async function getRecommendations(
   }
 
   return (await res.json()) as RecommendationResponse;
+}
+
+export type PreferencesOptionsResponse = {
+  tags: string[];
+  games: { id: number; name: string }[];
+};
+
+export async function getPreferencesOptions(): Promise<PreferencesOptionsResponse> {
+  const res = await fetch("/api/preferences/options");
+  if (!res.ok) {
+    throw new Error(`getPreferencesOptions failed: ${res.status}`);
+  }
+  return (await res.json()) as PreferencesOptionsResponse;
 }

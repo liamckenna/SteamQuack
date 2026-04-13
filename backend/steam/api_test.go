@@ -33,13 +33,41 @@ func TestFetchOwnedGames(t *testing.T) {
 
 	games, err := client.FetchOwnedGames(steamID)
 
-	// With real API key, should either succeed or fail gracefully
 	if err != nil {
-		t.Logf("API call returned error (OK if API unavailable): %v", err)
+		t.Logf("API call returned error: %v", err)
 	}
 
 	if games != nil && games.Response.GameCount > 0 {
 		t.Logf("Successfully fetched %d games for user", games.Response.GameCount)
+
+		// Validate expected games are present
+		expectedGames := map[uint32]string{
+			42960:   "Victoria II",
+			203770:  "Crusader Kings II",
+			236850:  "Europa Universalis IV",
+			255710:  "Cities: Skylines",
+			292030:  "The Witcher 3: Wild Hunt",
+			394360:  "Hearts of Iron IV",
+			1158310: "Crusader Kings III",
+			1222670: "The Sims 4",
+		}
+
+		foundGames := make(map[uint32]bool)
+		for _, game := range games.Response.Games {
+			foundGames[game.AppID] = true
+		}
+
+		// Check that at least some expected games are found
+		foundCount := 0
+		for appID := range expectedGames {
+			if foundGames[appID] {
+				foundCount++
+			}
+		}
+
+		if foundCount != len(expectedGames) {
+			t.Errorf("Expected all %d games to be found, but only found %d", len(expectedGames), foundCount)
+		}
 	}
 }
 
@@ -74,6 +102,21 @@ func TestScrapeGameDataWithSpecificAppID(t *testing.T) {
 				t.Errorf("Saved game has wrong app ID: expected 220, got %d", savedGame.AppID)
 			}
 		}
+
+		// tests duplicate detection try to scrape the same game again
+		_, err2 := service.ScrapeSpecificGame(220)
+		if err2 != nil {
+			t.Logf("Second scrape returned error: %v", err2)
+		}
+
+		var gameCount int64
+		db.Model(&models.Game{}).Where("app_id = ?", 220).Count(&gameCount)
+
+		if gameCount > 1 {
+			t.Errorf("Expected only 1 game with app ID 220, but found %d - duplicate detection failed", gameCount)
+		} else if gameCount == 1 {
+			t.Log("Duplicate detection working - only 1 game stored despite scraping twice")
+		}
 	}
 }
 
@@ -89,7 +132,7 @@ func TestScrapeGameDataMultipleGames(t *testing.T) {
 	err := service.ScrapeGameData(maxGames, 0)
 
 	if err != nil {
-		t.Logf("Error scraping multiple games (may be expected): %v", err)
+		t.Logf("Error scraping multiple games: %v", err)
 	}
 
 	// verify games were saved to database
