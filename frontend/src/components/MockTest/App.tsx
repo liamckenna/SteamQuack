@@ -22,7 +22,7 @@ function App() {
             price_floor: 0.0,
             price_ceiling: 100.0,
             review_count_floor: 0,
-            review_count_ceiling: 100000000,
+            review_count_ceiling: 10000000,
             review_percentage_floor: 0.0,
             review_percentage_ceiling: 100.0,
             release_year_floor: 1970,

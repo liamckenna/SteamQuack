@@ -55,7 +55,7 @@ func (c *APIClient) FetchAppList(lastAppId int) (*SteamAppListResponse, int, err
 func (c *APIClient) FetchGameDetails(appID uint32) (*SteamGameDetails, error) {
 	<-c.rateLimiter.C // Wait for rate limit
 
-	url := fmt.Sprintf("https://store.steampowered.com/api/appdetails?appids=%d", appID)
+	url := fmt.Sprintf("https://store.steampowered.com/api/appdetails?appids=%d&l=english", appID)
 
 	resp, err := c.httpClient.Get(url)
 	if err != nil {
