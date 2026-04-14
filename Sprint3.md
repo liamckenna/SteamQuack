@@ -12,7 +12,6 @@
 - Successfully merged the database update scheduler, allowing for a self-sufficient database that stays up-to-date with currently released steam games.
 - Made heavy optimizations to drastically speed up the recommendation algorithm, allowing it to evaluate almost 100k games in a couple of seconds.
 - Implemented a dialogue system for the site to dynamically have the host character talk to the user through the main text box, which can be triggered anywhere in the site code.
--
 
 ## Backend API documentation:
 
