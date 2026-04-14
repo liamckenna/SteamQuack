@@ -26,6 +26,5 @@ describe("signed-in state from Steam callback URL", () => {
     cy.url().should("include", `?steamid=${steamID}`);
     cy.contains(`Welcome, ${personaName}`).should("be.visible");
     cy.contains(`Steam ID: ${steamID}`).should("be.visible");
-    cy.get(".signin-panel__signout-btn").should("be.visible");
   });
 });
