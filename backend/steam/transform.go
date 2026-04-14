@@ -2,7 +2,6 @@ package steam
 
 import (
 	"strconv"
-	"strings"
 	"time"
 
 	"steamquack/backend/models"
@@ -139,7 +138,7 @@ func UpdateGameWithTagData(game *models.Game, gameDetails *SteamGameDetails, ste
 	// add SteamSpy tags if present, otherwise fallback to Steam genres
 	if steamspyData != nil && len(steamspyData.Tags) > 0 {
 		for tagName, votes := range steamspyData.Tags {
-			if _, exists := allPossibleTags[strings.ToLower(tagName)]; exists {
+			if _, exists := allPossibleTags[tagName]; exists {
 				gameTags = append(gameTags, models.GameTag{
 					GameID:  game.ID,
 					TagName: tagName,
@@ -149,7 +148,7 @@ func UpdateGameWithTagData(game *models.Game, gameDetails *SteamGameDetails, ste
 		}
 	} else if gameDetails != nil && len(gameDetails.Genres) > 0 {
 		for _, genre := range gameDetails.Genres {
-			if _, exists := allPossibleTags[strings.ToLower(genre.Description)]; exists {
+			if _, exists := allPossibleTags[genre.Description]; exists {
 				gameTags = append(gameTags, models.GameTag{
 					GameID:  game.ID,
 					TagName: genre.Description,

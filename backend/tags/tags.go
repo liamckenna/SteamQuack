@@ -1011,7 +1011,7 @@ func NormalizeTagWeights(gameTags []models.GameTag) []models.GameTag {
 		categoryTotals[category] = 0.0
 	}
 	for _, tag := range gameTags {
-		tagName := strings.ToLower(tag.TagName)
+		tagName := tag.TagName
 		tagCount := tag.Weight
 		category := tagsWithCategories[tagName]
 		categoryTotals[category] += tagCount
@@ -1020,7 +1020,7 @@ func NormalizeTagWeights(gameTags []models.GameTag) []models.GameTag {
 	// calculate normalized weights as tag count relative to category total
 	normalizedTags := gameTags
 	for i := range normalizedTags {
-		tagName := strings.ToLower(normalizedTags[i].TagName)
+		tagName := normalizedTags[i].TagName
 		tagCount := normalizedTags[i].Weight
 		category := tagsWithCategories[tagName]
 		if categoryTotals[category] > 0 {

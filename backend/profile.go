@@ -150,7 +150,6 @@ func profileParseHandler(w http.ResponseWriter, r *http.Request) {
 	cfg := config.LoadConfig()
 	db := database.GetDB()
 	steamService := steam.NewScrapingService(cfg, db)
-	defer steamService.Close()
 
 	playerSummary, err := steamService.GetUserProfile(resolvedSteamID)
 	if err != nil {
