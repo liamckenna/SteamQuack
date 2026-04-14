@@ -5,29 +5,45 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 )
 
 type APIClient struct {
 	httpClient  *http.Client
 	apiKey      string
+	rateLimitMs int
 	rateLimiter *time.Ticker
+	isFirstCall bool
 }
 
 // creates a new Steam API client with rate limiting
-func NewAPIClient(apiKey string) *APIClient {
+func NewAPIClient(apiKey string, rateLimitMs int) *APIClient {
 	return &APIClient{
 		httpClient: &http.Client{
 			Timeout: 30 * time.Second,
 		},
 		apiKey:      apiKey,
-		rateLimiter: time.NewTicker(3 * time.Second), // 3 seconds between requests
+		rateLimitMs: rateLimitMs,
+		rateLimiter: nil,
+		isFirstCall: true,
+	}
+}
+
+func (c *APIClient) waitRateLimit() {
+	if c.rateLimitMs == 0 {
+		return
+	} else if c.isFirstCall == true { // Don't wait for first API call
+		c.isFirstCall = false
+		c.rateLimiter = time.NewTicker(time.Duration(c.rateLimitMs) * time.Millisecond)
+	} else {
+		<-c.rateLimiter.C
 	}
 }
 
 // fetches all Steam apps
 func (c *APIClient) FetchAppList(lastAppId int) (*SteamAppListResponse, int, error) {
-	<-c.rateLimiter.C // Wait for rate limit
+	c.waitRateLimit() // Wait for rate limit
 
 	url := fmt.Sprintf("https://api.steampowered.com/IStoreService/GetAppList/v1/?key=%s&max_results=50000&last_appid=%d", c.apiKey, lastAppId)
 
@@ -53,7 +69,7 @@ func (c *APIClient) FetchAppList(lastAppId int) (*SteamAppListResponse, int, err
 
 // fetches detailed information for a specific game
 func (c *APIClient) FetchGameDetails(appID uint32) (*SteamGameDetails, error) {
-	<-c.rateLimiter.C // Wait for rate limit
+	c.waitRateLimit() // Wait for rate limit
 
 	url := fmt.Sprintf("https://store.steampowered.com/api/appdetails?appids=%d&l=english", appID)
 
@@ -83,7 +99,7 @@ func (c *APIClient) FetchGameDetails(appID uint32) (*SteamGameDetails, error) {
 
 // fetches tag data from SteamSpy
 func (c *APIClient) FetchSteamSpyData(appID uint32) (*SteamSpyAppDetails, error) {
-	<-c.rateLimiter.C // Wait for rate limit
+	c.waitRateLimit() // Wait for rate limit
 
 	url := fmt.Sprintf("https://steamspy.com/api.php?request=appdetails&appid=%d", appID)
 
@@ -105,8 +121,40 @@ func (c *APIClient) FetchSteamSpyData(appID uint32) (*SteamSpyAppDetails, error)
 	return &spyData, nil
 }
 
+// fetches a dictionary of 1000 games from a specific SteamSpy page
+func (c *APIClient) FetchSteamSpyPage(page int) (SteamSpyPageResponse, error) {
+	c.waitRateLimit() // Wait for rate limit
+
+	url := fmt.Sprintf("https://steamspy.com/api.php?request=all&page=%d", page)
+	log.Printf("Fetching SteamSpy page %d: %s", page, url)
+
+	resp, err := c.httpClient.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch SteamSpy page %d: %w", page, err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("SteamSpy API returned status %d for page %d", resp.StatusCode, page)
+	}
+
+	contentType := resp.Header.Get("Content-Type")
+	if !strings.Contains(contentType, "application/json") {
+		return nil, fmt.Errorf("SteamSpy API returned non-JSON response for page %d", page)
+	}
+
+	var pageData SteamSpyPageResponse
+	if err := json.NewDecoder(resp.Body).Decode(&pageData); err != nil {
+		return nil, fmt.Errorf("failed to decode SteamSpy page %d: %w", page, err)
+	}
+
+	return pageData, nil
+}
+
 // fetches player summary
 func (c *APIClient) FetchPlayerSummary(steamID string) (*SteamPlayerSummary, error) {
+	c.waitRateLimit() // Wait for rate limit
+
 	url := fmt.Sprintf("http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=%s&steamids=%s",
 		c.apiKey, steamID)
 
@@ -134,6 +182,8 @@ func (c *APIClient) FetchPlayerSummary(steamID string) (*SteamPlayerSummary, err
 
 // fetches games owned by a given player
 func (c *APIClient) FetchOwnedGames(steamID string) (*SteamOwnedGamesResponse, error) {
+	c.waitRateLimit() // Wait for rate limit
+
 	url := fmt.Sprintf("http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=%s&steamid=%s&format=json&include_appinfo=true&include_played_free_games=1",
 		c.apiKey, steamID)
 
@@ -157,5 +207,7 @@ func (c *APIClient) FetchOwnedGames(steamID string) (*SteamOwnedGamesResponse, e
 
 // cleans up the rate limiter
 func (c *APIClient) Close() {
-	c.rateLimiter.Stop()
+	if c.rateLimiter != nil {
+		c.rateLimiter.Stop()
+	}
 }
