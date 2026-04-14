@@ -41,8 +41,7 @@
 - As a new user, I want to be hooked to use the site, so that I have an initial reason to stay on the app and choose it over other recommendation platforms.
 - As a user, I want the game recommendation pool to be up to date with the latest Steam games, so that I'm not missing out on any potential games.
 
-
-## This week:
+## DONE:
 - User sign in through unique username or steam profile page link - Vishwa
 - Sign out button - Vishwa
 - Unit tests for new functionality - Vishwa
@@ -52,12 +51,23 @@
 - Preferences page display - Dylan (Mostly done)
 - Do algorithm in chunks - Liam
 - Dialogue system - Liam
+- Create page system for both Prescriptions and diagnostics (and maybe preferences) - Vishwa
 
 
-## Later:
-- Sort functionality on prescriptions
-- Create page system for both Prescriptions and diagnostics (and maybe preferences)
-- Diagnostics page
-- write dialogue
-- update site graphics
-- private steam profile guidance
+## Due next wednesday:
+- private steam profile guidance - Vishwa
+- Lock other tabs from being clicked while recommendations are being generated - Vishwa
+- Lock all other tabs until successful sign in - Vishwa
+- Move back sign out button on the sign in tab - Vishwa
+
+- Use page system for displaying more recommendations - Daniel
+- Double clicking opens steam store page for recommendations - Daniel
+- Recently played games API - Daniel
+- Diagnostics page front-end - Daniel
+
+- Preferences page only showing games owned by user - Dylan
+- Diagnostics back end - Dylan
+
+- write dialogue - Liam
+- update site graphics - Liam
+- Recently played games algorithm integration - Liam
