@@ -21,3 +21,11 @@
 
 ## Front End Test Cases:
 
+preferences-settings.cy:
+- Check if the page loads the given recommendation setting sliders correctly (randomizer, price range, etc.)
+- Check if when clicking on a search the dropdown appears
+- Check if interacting with a normal slider(randomizer) works correctly
+- Check if interacting with a dual slider works correctly
+- Check if after searching for a game in the searcher and clicking the checkbox it appears in a list of checked games on the top of the dropdown
+- Check if by default NSFW content is excluded
+- Check if the reset button exists and can be clicked
