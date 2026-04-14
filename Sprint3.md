@@ -14,9 +14,9 @@
 - Implemented a dialogue system for the site to dynamically have the host character talk to the user through the main text box, which can be triggered anywhere in the site code.
 
 ## Backend API documentation:
-
+No additional backend functionality was developed this sprint.
 ## Backend Test Cases:
-
+All backend functionality was demonstrated through front-end unit tests (effectively making them end-to-end).
 ## Front End Test Cases:
 
 preferences-settings.cy:
