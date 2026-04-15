@@ -155,3 +155,29 @@
   filter: brightness(1.1);
   background-color: red;
 }
+
+.signin-panel__private-warning {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  max-width: 360px;
+}
+
+.signin-panel__private-warning-text {
+  margin: 0;
+  color: #fca5a5;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.signin-panel__private-warning-link {
+  color: #93c5fd;
+  text-decoration: underline;
+  font-size: 0.95rem;
+}
+
+.signin-panel__private-warning-link:hover {
+  color: #bfdbfe;
+}

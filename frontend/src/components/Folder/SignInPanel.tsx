@@ -26,6 +26,7 @@ type SteamAuthUserResponse = {
     steam_id: string;
     persona_name: string;
     avatar: string;
+    public: boolean;
   };
 };
 
@@ -53,6 +54,7 @@ export default function SignInPanel({ onAuthStateChange }: SignInPanelProps) {
   const [steamID, setSteamID] = useState<string | null>(null);
   const [steamName, setSteamName] = useState<string | null>(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
+  const [isProfilePublic, setIsProfilePublic] = useState(true);
   const { startDialogue } = useDialogue();
 
   useEffect(() => {
@@ -60,6 +62,7 @@ export default function SignInPanel({ onAuthStateChange }: SignInPanelProps) {
     const returnedSteamID = params.get("steamid");
 
     if (!returnedSteamID) {
+      setIsProfilePublic(true);
       onAuthStateChange(false);
       return;
     }
@@ -76,12 +79,14 @@ export default function SignInPanel({ onAuthStateChange }: SignInPanelProps) {
       })
       .then((data) => {
         setSteamName(data.user.persona_name);
+        setIsProfilePublic(data.user.public);
         onAuthStateChange(true);
         startDialogue("signInSuccess");
       })
       .catch((err) => {
         console.error(err);
         onAuthStateChange(false);
+        setIsProfilePublic(true);
       })
       .finally(() => {
         setIsLoadingProfile(false);
@@ -153,7 +158,22 @@ export default function SignInPanel({ onAuthStateChange }: SignInPanelProps) {
           </h2>
 
           <p className="signin-panel__welcome-subtitle">Steam ID: {steamID}</p>
-
+          {!isLoadingProfile && !isProfilePublic && (
+            <div className="signin-panel__private-warning">
+              <p className="signin-panel__private-warning-text">
+                Recommendations can only be generated if your Steam profile is
+                public.
+              </p>
+              <a
+                className="signin-panel__private-warning-link"
+                href="https://help.steampowered.com/en/faqs/view/588C-C67D-0251-C276"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Make your Steam profile public
+              </a>
+            </div>
+          )}
           <button
             type="button"
             className="signin-panel__signout-btn"
