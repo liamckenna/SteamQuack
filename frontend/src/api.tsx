@@ -78,3 +78,25 @@ export async function getPreferencesOptions(): Promise<PreferencesOptionsRespons
   }
   return (await res.json()) as PreferencesOptionsResponse;
 }
+
+export type UserProfileResponse = {
+  user: {
+    steam_id: string;
+    persona_name: string;
+    avatar: string;
+  };
+  owned_games_count: number;
+  owned_games: {
+    app_id: number;
+    name: string;
+    playtime_forever: number;
+  }[];
+};
+
+export async function getUserProfile(steamid: string): Promise<UserProfileResponse> {
+  const res = await fetch(`/api/user/profile/${steamid}`);
+  if (!res.ok) {
+    throw new Error(`getUserProfile failed: ${res.status}`);
+  }
+  return (await res.json()) as UserProfileResponse;
+}
