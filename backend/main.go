@@ -58,7 +58,8 @@ func main() {
 	r.HandleFunc("/api/scrape/games/{count}", ScrapeGamesHandler(steamService)).Methods("POST")              // scrapes multiple games (1-100)
 	r.HandleFunc("/api/scrape/game/{appid}", ScrapeSpecificGameHandler(steamService)).Methods("POST")        // scrapes a specific game
 	r.HandleFunc("/api/user/profile/{steamid}", GetUserProfileHandler(steamService)).Methods(http.MethodGet) // scrapes user profile and owned games
-	r.HandleFunc("/api/stats", StatsHandler(steamService)).Methods("GET")                                    // gets scraping statistics
+	r.HandleFunc("/api/user/diagnostics/{steamid}", DiagnosticsHandler(steamService)).Methods(http.MethodGet)
+	r.HandleFunc("/api/stats", StatsHandler(steamService)).Methods("GET") // gets scraping statistics
 
 	r.HandleFunc("/auth/steam/login", SteamLoginHandler).Methods(http.MethodGet)
 	r.HandleFunc("/auth/steam/callback", SteamCallbackHandler).Methods(http.MethodGet)
