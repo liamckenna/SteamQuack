@@ -161,8 +161,8 @@ export default function SignInPanel({ onAuthStateChange }: SignInPanelProps) {
           {!isLoadingProfile && !isProfilePublic && (
             <div className="signin-panel__private-warning">
               <p className="signin-panel__private-warning-text">
-                Recommendations can only be generated if your Steam profile is
-                public.
+                Recommendations can only be generated if your game details are public and
+                the "Always keep my total playtime private" option is unchecked.
               </p>
               <a
                 className="signin-panel__private-warning-link"
