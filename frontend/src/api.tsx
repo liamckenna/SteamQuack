@@ -53,12 +53,14 @@ export type OwnedGame = {
   appid: number;
   name: string;
   playtime_forever: number;
+  playtime_2weeks: number;
 }
 
 export type DiagnosticsResponse = {
   total_playtime_minutes: number;
   most_played_game: OwnedGame;
   nichest_game: OwnedGame;
+  recently_played: OwnedGame[];
   genres_breakdown: Record<string, number>;
   sub_genres_breakdown: Record<string, number>;
 };

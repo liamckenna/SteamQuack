@@ -65,7 +65,7 @@ export default function DiagnosticsPanel() {
 
   if (loading) return <div className="diagnostics-panel">Loading diagnostics...</div>;
   if (error) return <div className="diagnostics-panel">{error}</div>;
-  if (!data) return <div className="diagnostics-panel">No diagnostics returned.</div>;
+  if (!data || data.most_played_game == null) return <div className="diagnostics-panel">No diagnostics returned.</div>;
 
   const genreData = processChartData(data.genres_breakdown);
   const subGenreData = processChartData(data.sub_genres_breakdown);
@@ -97,6 +97,23 @@ export default function DiagnosticsPanel() {
             </dd>
           </div>
         </dl>
+
+        {/* Recently Played Section */}
+        <h2 className="diagnostics-panel__heading">Recently Played (2 Weeks)</h2>
+        {data.recently_played.length == 0 && (
+          <p>No recently played games.</p>
+        )}
+        {data.recently_played.length > 0 && (
+          <div className="diagnostics-panel__recently-played">
+            {data.recently_played.map((game) => (
+              <figure>
+                <img src={`https://steamcdn-a.akamaihd.net/steam/apps/${game.appid}/header.jpg`}/>
+                <figcaption>{game.name}</figcaption>
+                <figcaption>({minutesToHours(game.playtime_2weeks)} hrs)</figcaption>
+              </figure>
+            ))}
+          </div>
+        )}
 
         {/* Dream Game Section */}
         <div className="diagnostics-panel__dream-game">

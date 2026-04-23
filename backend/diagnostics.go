@@ -12,11 +12,12 @@ import (
 )
 
 type DiagnosticsResponse struct {
-	TotalPlaytimeMinutes int                   `json:"total_playtime_minutes"`
-	MostPlayedGame       *steam.SteamOwnedGame `json:"most_played_game"`
-	NichestGame          *steam.SteamOwnedGame `json:"nichest_game"` // based on lowest review count among owned games that exist in our db
-	GenresBreakdown      map[string]float64    `json:"genres_breakdown"`
-	SubGenresBreakdown   map[string]float64    `json:"sub_genres_breakdown"`
+	TotalPlaytimeMinutes int                     `json:"total_playtime_minutes"`
+	MostPlayedGame       *steam.SteamOwnedGame   `json:"most_played_game"`
+	NichestGame          *steam.SteamOwnedGame   `json:"nichest_game"` // based on lowest review count among owned games that exist in our db
+	RecentlyPlayed       []*steam.SteamOwnedGame `json:"recently_played"`
+	GenresBreakdown      map[string]float64      `json:"genres_breakdown"`
+	SubGenresBreakdown   map[string]float64      `json:"sub_genres_breakdown"`
 }
 
 func DiagnosticsHandler(steamService *steam.ScrapingService) http.HandlerFunc {
@@ -47,6 +48,7 @@ func DiagnosticsHandler(steamService *steam.ScrapingService) http.HandlerFunc {
 		totalPlaytime := 0
 		var mostPlayed *steam.SteamOwnedGame
 		var nichest *steam.SteamOwnedGame
+		var recently_played []*steam.SteamOwnedGame
 
 		// gets user's total playtime
 		ownedAppIDs := make([]uint32, 0, len(ownedGamesResp.Response.Games))
@@ -74,6 +76,14 @@ func DiagnosticsHandler(steamService *steam.ScrapingService) http.HandlerFunc {
 			if game.AppID == nichestGame.AppID {
 				nichest = game
 				break
+			}
+		}
+
+		// gets user's recently played games
+		for i := range ownedGamesResp.Response.Games {
+			game := &ownedGamesResp.Response.Games[i]
+			if game.Playtime2Weeks > 0 {
+				recently_played = append(recently_played, game)
 			}
 		}
 
@@ -141,6 +151,7 @@ func DiagnosticsHandler(steamService *steam.ScrapingService) http.HandlerFunc {
 			TotalPlaytimeMinutes: totalPlaytime,
 			MostPlayedGame:       mostPlayed,
 			NichestGame:          nichest,
+			RecentlyPlayed:       recently_played,
 			GenresBreakdown:      genresBreakdown,
 			SubGenresBreakdown:   subGenresBreakdown,
 		}

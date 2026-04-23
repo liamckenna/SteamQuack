@@ -3,7 +3,7 @@
 }
 
 .diagnostics-panel {
-  max-width: 560px;
+  max-width: 660px;
   margin: 0 auto;
   padding: 8px 0;
 }
@@ -44,6 +44,16 @@
   margin: 0;
   font-weight: 600;
   color: #f1f5f9;
+}
+
+.diagnostics-panel__recently-played {
+  display: flex;
+  justify-content: space-around;
+}
+
+.diagnostics-panel__recently-played img {
+  width: 100%;
+  height: auto;
 }
 
 .diagnostics-panel__dream-game {
