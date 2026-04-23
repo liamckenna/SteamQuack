@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"sort"
 	"steamquack/backend/database"
 	"steamquack/backend/models"
 	"steamquack/backend/steam"
@@ -14,7 +15,8 @@ import (
 type DiagnosticsResponse struct {
 	TotalPlaytimeMinutes int                   `json:"total_playtime_minutes"`
 	MostPlayedGame       *steam.SteamOwnedGame `json:"most_played_game"`
-	NichestGame          *models.Game          `json:"nichest_game"` // based on lowest review count among owned games that exist in our db
+	NichestGame          *models.Game          `json:"nichest_game"`        // based on lowest review count among owned games that exist in our db
+	PreferredGameType    string                `json:"preferred_game_type"` // e.g. "Action RPG, Auto Battler, Sandbox with 2D Fighter, 3D Fighter, 4X"
 	GenresBreakdown      map[string]float64    `json:"genres_breakdown"`
 	SubGenresBreakdown   map[string]float64    `json:"sub_genres_breakdown"`
 }
@@ -129,10 +131,54 @@ func DiagnosticsHandler(steamService *steam.ScrapingService) http.HandlerFunc {
 			}
 		}
 
+		type TagCount struct {
+			TagName string
+			Count   int
+		}
+
+		var sortedGenres []TagCount
+		for g, count := range genreCounts {
+			sortedGenres = append(sortedGenres, TagCount{g, count})
+		}
+		sort.Slice(sortedGenres, func(i, j int) bool {
+			return sortedGenres[i].Count > sortedGenres[j].Count
+		})
+
+		var sortedSubGenres []TagCount
+		for sg, count := range subGenreCounts {
+			sortedSubGenres = append(sortedSubGenres, TagCount{sg, count})
+		}
+		sort.Slice(sortedSubGenres, func(i, j int) bool {
+			return sortedSubGenres[i].Count > sortedSubGenres[j].Count
+		})
+
+		var topGenres []string
+		for i := 0; i < len(sortedGenres) && i < 3; i++ {
+			topGenres = append(topGenres, sortedGenres[i].TagName)
+		}
+
+		var topSubGenres []string
+		for i := 0; i < len(sortedSubGenres) && i < 3; i++ {
+			topSubGenres = append(topSubGenres, sortedSubGenres[i].TagName)
+		}
+
+		preferredGameType := ""
+		for _, g := range topGenres {
+			preferredGameType = preferredGameType + " " + g
+		}
+
+		preferredGameType += " with "
+
+		for _, sg := range topSubGenres {
+			preferredGameType = preferredGameType + " " + sg
+		}
+		preferredGameType = preferredGameType + " gameplay"
+
 		response := DiagnosticsResponse{
 			TotalPlaytimeMinutes: totalPlaytime,
 			MostPlayedGame:       mostPlayed,
 			NichestGame:          nichestPtr,
+			PreferredGameType:    preferredGameType,
 			GenresBreakdown:      genresBreakdown,
 			SubGenresBreakdown:   subGenresBreakdown,
 		}
