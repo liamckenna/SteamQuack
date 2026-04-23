@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import Slider from "rc-slider";
 import "rc-slider/assets/index.css";
 import "./PreferencesPanel.css";
-import { getPreferencesOptions } from "../../api";
+import { getPreferencesOptions, getUserProfile } from "../../api";
 import type { PreferencesState } from "./Folder";
 import { useDialogue } from "../../context/DialogueContext";
 
@@ -24,7 +24,20 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
       try {
         const data = await getPreferencesOptions();
         setAllTags(data.tags || []);
-        setAllGames(data.games || []);
+        
+        const params = new URLSearchParams(window.location.search);
+        const steamid = params.get("steamid");
+        if (steamid) {
+          const profileData = await getUserProfile(steamid);
+          const ownedGamesMap = (profileData.owned_games || []).map(g => ({
+            id: g.app_id,
+            name: g.name
+          }));
+          setAllGames(ownedGamesMap);
+        } else {
+          // if somehow not logged in and accessing the panel
+          setAllGames(data.games || []);
+        }
       } catch (err) {
         console.error("Failed to load from database:", err);
       }
