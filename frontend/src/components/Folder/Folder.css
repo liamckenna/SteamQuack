@@ -5,10 +5,9 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
-  background: #1a2434;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+
 }
 
 .folder-tabs {
@@ -57,6 +56,7 @@
 }
 
 .folder-panel {
+  background: #1a2434;
   flex: 1;
   overflow: hidden;
   padding: 16px;

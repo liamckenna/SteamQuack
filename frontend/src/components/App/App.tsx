@@ -6,10 +6,12 @@ import Decorations from '../Decorations/Decorations.tsx'
 import Logo from '../Logo/Logo.tsx'
 import Ducktor from '../Ducktor/Ducktor.tsx'
 import { DialogueProvider } from '../../context/DialogueContext'
+import { DucktorProvider } from '../../context/DucktorContext'
 
 export default function App() {
   return (
     <DialogueProvider>
+      <DucktorProvider>
       <div className="screen-container">
         <div className="content-container">
           <div className="column left-column">
@@ -25,7 +27,8 @@ export default function App() {
             <div className="bottom-row"><Ducktor /></div>
           </div>
         </div>
-      </div>
+        </div>
+      </DucktorProvider>
     </DialogueProvider>
   )
 }

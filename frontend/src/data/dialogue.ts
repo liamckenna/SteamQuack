@@ -1,20 +1,23 @@
 export interface DialogueVariant {
     lines: string[];
     next?: string;
+    face?: "normal" | "happy" | "shocked" | "sad";
 }
 const dialogues: Record<string, DialogueVariant[]> = {
     openingLine: [
         {
             lines: [
-                "well come! (click here to continue)",
+                "well come! (click here or on the duck to continue)",
             ],
             next: "remainingOpeningLines",
+            face: "happy",
         },
         {
             lines: [
-                "howwwdy! (click here to continue)",
+                "howwwdy! (click here or on the duck to continue)",
             ],
             next: "remainingOpeningLines",
+            face: "happy",
         },
     ],
     remainingOpeningLines: [
@@ -23,8 +26,17 @@ const dialogues: Record<string, DialogueVariant[]> = {
                 "please, have a seet.",
                 "my name is Ducktor Gamez. i herd your experiensing some simptoms of bordum.",
                 "its truley unforchunate, but no need to worrey. yuve come to the rite plase.",
-                "pleese fill out the new pashient form so i can evalue ate your case.",
             ],
+            next: "pleaseFillOutForm",
+            face: "normal",
+        },
+    ],
+    pleaseFillOutForm: [
+        {
+            lines: [
+                "pleese fill out the form so i can evalue ate your case.",
+            ],
+            face: "happy",
         },
     ],
     signInSuccess: [

@@ -5,11 +5,13 @@ interface DialogueState {
     lines: string[];
     currentIndex: number;
     next?: string;
+    face?: "normal" | "happy" | "shocked" | "sad";
 }
 
 interface DialogueContextType {
     currentLine: string | null;
     isActive: boolean;
+    currentFace?: "normal" | "happy" | "shocked" | "sad";
     startDialogue: (key: string) => void;
     advance: () => void;
 }
@@ -31,7 +33,7 @@ export function DialogueProvider({ children }: { children: ReactNode }) {
     const startDialogue = useCallback((key: string) => {
         const variant = pickVariant(key);
         if (variant) {
-            setState({ lines: variant.lines, currentIndex: 0, next: variant.next });
+            setState({ lines: variant.lines, currentIndex: 0, next: variant.next, face: variant.face });
         }
     }, []);
 
@@ -46,7 +48,7 @@ export function DialogueProvider({ children }: { children: ReactNode }) {
             if (prev.next) {
                 const variant = pickVariant(prev.next);
                 if (variant) {
-                    return { lines: variant.lines, currentIndex: 0, next: variant.next };
+                    return { lines: variant.lines, currentIndex: 0, next: variant.next, face: variant.face };
                 }
             }
 
@@ -55,7 +57,7 @@ export function DialogueProvider({ children }: { children: ReactNode }) {
     }, []);
 
     return (
-        <DialogueContext.Provider value={{ currentLine, isActive, startDialogue, advance }}>
+        <DialogueContext.Provider value={{ currentLine, isActive, currentFace: state.face, startDialogue, advance }}>
             {children}
         </DialogueContext.Provider>
     );
