@@ -1,10 +1,14 @@
 import './DiagnosticsPanel.css';
 import { useEffect, useState } from 'react';
 import { getDiagnostics, type DiagnosticsResponse } from "../../api";
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, type RenderableText, type TooltipValueType } from 'recharts';
 
 // --- Helper Functions ---
 const minutesToHours = (minutes: number) => (minutes / 60).toFixed(1);
+
+const formatPercent = (value: RenderableText | TooltipValueType): string => {
+  return `${Number(value).toFixed(1)}%`;
+}
 
 const processChartData = (data: Record<string, number>, threshold = 5) => {
   let otherValue = 0;
@@ -30,9 +34,8 @@ const getTopItem = (data: Record<string, number>) => {
   return entries.reduce((a, b) => (a[1] > b[1] ? a : b))[0];
 };
 
-// Colors
-const GENRE_COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#64748b'];
-const SUBGENRE_COLORS = ['#6366f1', '#a855f7', '#f43f5e', '#14b8a6', '#64748b'];
+// --- Colors ---
+const COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#6366f1', '#a855f7', '#f43f5e', '#14b8a6'];
 
 // --- Component ---
 export default function DiagnosticsPanel() {
@@ -45,7 +48,7 @@ export default function DiagnosticsPanel() {
   if (!userID) return <div>Please sign in first.</div>;
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchDiagnostics = async () => {
       try {
         setLoading(true);
         const result = await getDiagnostics(userID);
@@ -57,12 +60,12 @@ export default function DiagnosticsPanel() {
       }
     };
 
-    fetchData();
+    fetchDiagnostics();
   }, [userID]);
 
   if (loading) return <div className="diagnostics-panel">Loading diagnostics...</div>;
   if (error) return <div className="diagnostics-panel">{error}</div>;
-  if (!data) return null;
+  if (!data) return <div className="diagnostics-panel">No diagnostics returned.</div>;
 
   const genreData = processChartData(data.genres_breakdown);
   const subGenreData = processChartData(data.sub_genres_breakdown);
@@ -73,9 +76,9 @@ export default function DiagnosticsPanel() {
   return (
     <div className="diagnostics-panel">
       
-      {/* Stats Section */}
+      {/* Statistics Section */}
       <section className="diagnostics-panel__section">
-        <h2 className="diagnostics-panel__heading">Player Stats</h2>
+        <h2 className="diagnostics-panel__heading">Player Statistics</h2>
         <dl className="diagnostics-panel__stats">
           <div className="diagnostics-panel__stat">
             <dt>Total Playtime</dt>
@@ -84,13 +87,13 @@ export default function DiagnosticsPanel() {
           <div className="diagnostics-panel__stat">
             <dt>Most Played</dt>
             <dd>
-              {data.most_played_game.name} ({minutesToHours(data.most_played_game.playtime_minutes)} hrs)
+              {data.most_played_game.name} ({minutesToHours(data.most_played_game.playtime_forever)} hrs)
             </dd>
           </div>
           <div className="diagnostics-panel__stat">
             <dt>Nichest Game</dt>
             <dd>
-              {data.nichest_game.name} ({minutesToHours(data.nichest_game.playtime_minutes)} hrs)
+              {data.nichest_game.name} ({minutesToHours(data.nichest_game.playtime_forever)} hrs)
             </dd>
           </div>
         </dl>
@@ -99,7 +102,7 @@ export default function DiagnosticsPanel() {
         <div className="diagnostics-panel__dream-game">
           <h3 className="diagnostics-panel__dream-title">Your Dream Game</h3>
           <p className="diagnostics-panel__dream-desc">
-            Based on your habits, you'd love a <strong>{topGenre}</strong> game that focuses heavily on being <strong>{topSubGenre}</strong>.
+            Based on your habits, you'd love a <strong>{topGenre}</strong> <strong>{topSubGenre}</strong>.
           </p>
         </div>
       </section>
@@ -110,8 +113,8 @@ export default function DiagnosticsPanel() {
         <div className="diagnostics-panel__charts">
           
           {/* Genres Chart */}
-          <div>
-            <h3 className="diagnostics-panel__dream-title" style={{ fontSize: '0.85rem' }}>Genres</h3>
+          <div className="diagnostics-panel__chart-wrapper">
+            <h3 className="diagnostics-panel__heading" style={{ fontSize: '0.85rem' }}>Genres</h3>
             <div className="diagnostics-panel__pie-wrap" style={{ height: 200 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -126,10 +129,11 @@ export default function DiagnosticsPanel() {
                     stroke="none"
                   >
                     {genreData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={GENRE_COLORS[index % GENRE_COLORS.length]} />
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
                   <Tooltip
+                    formatter={formatPercent}
                     contentStyle={{ background: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '4px', color: '#fff' }}
                   />
                 </PieChart>
@@ -138,26 +142,27 @@ export default function DiagnosticsPanel() {
           </div>
 
           {/* Sub-genres Chart */}
-          <div>
-            <h3 className="diagnostics-panel__dream-title" style={{ fontSize: '0.85rem' }}>Sub-Genres</h3>
-            <div className="diagnostics-panel__pie-wrap" style={{ height: 160 }}>
+          <div className="diagnostics-panel__chart-wrapper">
+            <h3 className="diagnostics-panel__heading" style={{ fontSize: '0.85rem' }}>Sub-Genres</h3>
+            <div className="diagnostics-panel__pie-wrap" style={{ height: 200 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={subGenreData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={30}
-                    outerRadius={65}
+                    innerRadius={40}
+                    outerRadius={80}
                     paddingAngle={2}
                     dataKey="value"
                     stroke="none"
                   >
                     {subGenreData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={SUBGENRE_COLORS[index % SUBGENRE_COLORS.length]} />
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
                   <Tooltip
+                    formatter={formatPercent}
                     contentStyle={{ background: 'rgba(0,0,0,0.8)', border: 'none', borderRadius: '4px', color: '#fff' }}
                   />
                 </PieChart>

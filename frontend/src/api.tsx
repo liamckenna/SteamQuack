@@ -50,9 +50,9 @@ export type RecommendationResponse = {
 };
 
 export type OwnedGame = {
-  app_id: number;
+  appid: number;
   name: string;
-  playtime_minutes: number;
+  playtime_forever: number;
 }
 
 export type DiagnosticsResponse = {
@@ -83,33 +83,16 @@ export async function getRecommendations(
 export async function getDiagnostics(
   profile: string,
 ): Promise<DiagnosticsResponse> {
-  // const res = await fetch("/api/user/diagnostics/" + profile, {
-  //   method: "GET",
-  //   headers: { "Content-Type": "application/json" },
-  // });
+  const res = await fetch("/api/user/diagnostics/" + profile, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  });
 
-  // if (!res.ok) {
-  //   throw new Error(`getDiagnostics failed: ${res.status}`);
-  // }
-
-  // return (await res.json()) as DiagnosticsResponse;
-
-  // TODO: merge backend
-
-  const empty: Record<string, number> = {};
-  const game: OwnedGame = {
-    app_id: 999,
-    name: "Test",
-    playtime_minutes: 100,
-  };
-  const res: DiagnosticsResponse = {
-    total_playtime_minutes: 200,
-    most_played_game: game,
-    nichest_game: game,
-    genres_breakdown: empty,
-    sub_genres_breakdown: empty,
+  if (!res.ok) {
+    throw new Error(`getDiagnostics failed: ${res.status}`);
   }
-  return res
+
+  return (await res.json()) as DiagnosticsResponse;
 }
 
 export type PreferencesOptionsResponse = {
