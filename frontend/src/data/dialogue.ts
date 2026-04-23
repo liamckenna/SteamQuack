@@ -45,7 +45,8 @@ const dialogues: Record<string, DialogueVariant[]> = {
                 "Nice, you're signed in!",
                 "Let me take a look at your games...",
                 "Ready to find your next favorite?",
-            ]
+            ],
+            face: "happy",
         }
     ],
     signInPrivate: [

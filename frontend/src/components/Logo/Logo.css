@@ -4,4 +4,30 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    position: relative;
+}
+
+.logo__img {
+    max-width: 100%;
+    max-height: 100%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -60%);
+
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-user-drag: none;
+    pointer-events: none;
+}
+
+.logo__layer-secondary {
+    z-index: 1;
+    /*filter: sepia(0) hue-rotate(0deg) saturate(0);*/
+}
+
+.logo__layer-primary {
+    z-index: 2;
 }
