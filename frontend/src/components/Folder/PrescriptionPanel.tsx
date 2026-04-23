@@ -16,13 +16,20 @@ export const GameTile = ({ game }: GameTileProps) => {
     <button
       className="prescription-panel__card"
       type="button"
-      onClick={() => { window.alert(
-        game.name + "\n" +
-        "$" + game.current_price + "\n" +
-        (new Date(game.release_date_unix * 1000)).toLocaleDateString() + "\n" +
-        Math.round(game.review_percentage) + "% (" + game.review_count + ")" + "\n" +
-        "[DEBUG] Score: " + game.score
-      ) }}
+      onDoubleClick={ () => {
+        window.open('https://store.steampowered.com/app/' + game.game_id, '_blank');
+      }}
+      onClick={async () => {
+        const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
+        await delay(500)
+        window.alert(
+          game.name + "\n" +
+          "$" + game.current_price + "\n" +
+          (new Date(game.release_date_unix * 1000)).toLocaleDateString() + "\n" +
+          Math.round(game.review_percentage) + "% (" + game.review_count + ")" + "\n" +
+          "[DEBUG] Score: " + game.score
+        )
+      }}
     >
       <div className="prescription-panel__card-cover">
         {discountPercent != 0 && (
