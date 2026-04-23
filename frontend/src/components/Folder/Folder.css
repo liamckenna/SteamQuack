@@ -63,3 +63,13 @@
   border-radius: 0 0 12px 12px;
   min-height: 0;
 }
+
+.folder-tab:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.folder-tab:disabled:hover {
+  background: var(--folder-tab-bg, #334155);
+  color: var(--folder-tab-color, #94a3b8);
+}
