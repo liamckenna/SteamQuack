@@ -149,7 +149,7 @@ func CreateTasteProfile(steamService *steam.ScrapingService, profileURL string, 
 		}
 
 		if settings.PrioritizeRecentlyPlayedGames {
-			playtime2WeeksMultiplier *= 4
+			playtime2WeeksMultiplier *= 6
 		}
 
 		playtimeMultiplier := playtimeAllTimeMultiplier + playtime2WeeksMultiplier

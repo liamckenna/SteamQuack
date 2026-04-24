@@ -34,10 +34,10 @@ export default function Folder() {
   const [isGeneratingRecommendations, setIsGeneratingRecommendations] =
     useState(false);
   const [preferences, setPreferences] = useState<PreferencesState>({
-    priceRange: [0, 100],
+    priceRange: [0, Number.MAX_SAFE_INTEGER],
     reviewRange: [0, 100],
     releaseYearRange: [1970, new Date().getFullYear()],
-    reviewCountRange: [0, 10000000],
+    reviewCountRange: [0, Number.MAX_SAFE_INTEGER],
     prioritizeSale: false,
     prioritizeRecentPlaytime: false,
     prioritizedTags: [],
