@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
 
-export type EyeType = "normal" | "happy" | "shocked" | "sad";
+export type EyeType = "normal" | "happy" | "shocked" | "sad" | "closed";
 export type MouthType = "closed" | "half" | "open";
 
 interface DucktorContextType {

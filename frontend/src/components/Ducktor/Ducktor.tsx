@@ -64,28 +64,29 @@ export default function Ducktor() {
 
         const scheduleNextBlink = () => {
             const nextBlinkIn = Math.random() * 4000 + 2000;
+            if (currentEyes !== "closed") {
+                t1 = setTimeout(() => {
+                    setIsBlinking(true);
 
-            t1 = setTimeout(() => {
-                setIsBlinking(true);
+                    t2 = setTimeout(() => {
+                        setIsBlinking(false);
 
-                t2 = setTimeout(() => {
-                    setIsBlinking(false);
+                        if (Math.random() < 0.2) {
+                            t3 = setTimeout(() => {
+                                setIsBlinking(true);
 
-                    if (Math.random() < 0.2) {
-                        t3 = setTimeout(() => {
-                            setIsBlinking(true);
-
-                            t4 = setTimeout(() => {
-                                setIsBlinking(false);
-                                scheduleNextBlink();
+                                t4 = setTimeout(() => {
+                                    setIsBlinking(false);
+                                    scheduleNextBlink();
+                                }, 100);
                             }, 100);
-                        }, 100);
-                    } else {
-                        scheduleNextBlink();
-                    }
-                }, 120);
+                        } else {
+                            scheduleNextBlink();
+                        }
+                    }, 120);
 
-            }, nextBlinkIn);
+                }, nextBlinkIn);
+            }
         };
 
         scheduleNextBlink();

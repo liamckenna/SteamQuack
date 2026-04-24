@@ -5,13 +5,13 @@ interface DialogueState {
     lines: string[];
     currentIndex: number;
     next?: string;
-    face?: "normal" | "happy" | "shocked" | "sad";
+    face?: "normal" | "happy" | "shocked" | "sad" | "closed";
 }
 
 interface DialogueContextType {
     currentLine: string | null;
     isActive: boolean;
-    currentFace?: "normal" | "happy" | "shocked" | "sad";
+    currentFace?: "normal" | "happy" | "shocked" | "sad" | "closed";
     startDialogue: (key: string) => void;
     advance: () => void;
 }

@@ -1,7 +1,7 @@
 export interface DialogueVariant {
     lines: string[];
     next?: string;
-    face?: "normal" | "happy" | "shocked" | "sad";
+    face?: "normal" | "happy" | "shocked" | "sad" | "closed";
 }
 const dialogues: Record<string, DialogueVariant[]> = {
     openingLine: [
@@ -37,6 +37,14 @@ const dialogues: Record<string, DialogueVariant[]> = {
                 "pleese fill out the form so i can evalue ate your case.",
             ],
             face: "happy",
+        },
+    ],
+    fetchingProfile: [
+        {
+            lines: [
+                "let me chek my reckords.",
+            ],
+            face: "closed",
         },
     ],
     signInSuccess: [
