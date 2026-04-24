@@ -24,7 +24,14 @@ export default function Speech() {
     if (!isActive || !currentLine) {
         return (
             <div className="speech speech--idle">
-                <img src={speechBubbleBg} alt="Speech Bubble Background" className="speech__bubble-img speech__bubble-bg" />
+                <div
+                    className="speech__bubble-img speech__bubble-bg-mask"
+                    style={{
+                        WebkitMaskImage: `url(${speechBubbleBg})`,
+                        maskImage: `url(${speechBubbleBg})`
+                    }}
+                />
+
                 <img src={speechBubbleOutline} alt="Speech Bubble Outline" className="speech__bubble-img speech__bubble-outline" />
 
                 <div className="speech__content">
@@ -35,9 +42,15 @@ export default function Speech() {
     }
 
     return (
-        // ADDED "clickable" CLASS HERE
         <div className="speech clickable" onClick={advance}>
-            <img src={speechBubbleBg} alt="Speech Bubble Background" className="speech__bubble-img speech__bubble-bg" />
+            <div
+                className="speech__bubble-img speech__bubble-bg-mask"
+                style={{
+                    WebkitMaskImage: `url(${speechBubbleBg})`,
+                    maskImage: `url(${speechBubbleBg})`
+                }}
+            />
+
             <img src={speechBubbleOutline} alt="Speech Bubble Outline" className="speech__bubble-img speech__bubble-outline" />
 
             <div className="speech__content">

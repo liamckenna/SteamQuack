@@ -5,10 +5,12 @@ import signSecondary from "../../assets/images/Sign-Secondary.png";
 export default function Logo() {
     return (
         <div className="logo">
-            <img
-                src={signSecondary}
-                alt="SteamQuack Sign Background"
+            <div
                 className="logo__img logo__layer-secondary"
+                style={{
+                    WebkitMaskImage: `url(${signSecondary})`,
+                    maskImage: `url(${signSecondary})`
+                }}
             />
             <img
                 src={signPrimary}

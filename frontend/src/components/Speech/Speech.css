@@ -39,7 +39,7 @@
 }
 
 .speech__content {
-    color: black;
+    color: var(--color-text-primary);
     position: relative;
     z-index: 2;
     display: flex;
@@ -73,4 +73,17 @@
     50% {
         transform: translateY(5px);
     }
+}
+
+.speech__bubble-bg-mask {
+    z-index: 0;
+
+    background-color: var(--color-bg-main, #ffffff);
+
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
 }

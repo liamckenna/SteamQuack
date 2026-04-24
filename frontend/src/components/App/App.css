@@ -4,7 +4,7 @@
   width: 100vw;
   height: 100vh;
   text-align: center;
-  background-color: rgb(75, 74, 88);
+  background-color: var(--color-bg-tertiary);
 }
 
 html,
