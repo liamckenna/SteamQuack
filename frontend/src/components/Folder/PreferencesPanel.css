@@ -12,7 +12,6 @@
   margin: 0 0 14px;
   font-size: 1rem;
   font-weight: 600;
-  color: #e2e8f0;
 }
 
 .preferences-panel__sliders {
@@ -29,14 +28,12 @@
 }
 
 .preferences-panel__label {
-  font-size: 0.9rem;
-  color: #94a3b8;
+  font-size: var(--font-size-base);
   font-weight: 500;
 }
 
 .preferences-panel__range-val {
-  font-size: 0.85rem;
-  color: #cbd5e1;
+  font-size: var(--font-size-sm);
 }
 
 .preferences-panel__slider-row {
@@ -47,7 +44,7 @@
 
 .preferences-panel__range {
   flex: 1;
-  accent-color: #64748b;
+  accent-color: var(--color-accent);
   height: 6px;
 }
 
@@ -56,8 +53,7 @@
   align-items: center;
   gap: 8px;
   margin-top: 12px;
-  font-size: 0.9rem;
-  color: #cbd5e1;
+  font-size: var(--font-size-base);
   cursor: pointer;
 }
 
@@ -94,15 +90,12 @@
   width: 100%;
   padding: 10px 36px 10px 12px;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: rgba(0, 0, 0, 0.2);
-  color: #f1f5f9;
-  font-size: 0.95rem;
+  font-size: var(--font-size-base);
 }
 
 .preferences-panel__input:focus {
   outline: none;
-  border-color: #64748b;
+  border-color: var(--color-accent);
 }
 
 .preferences-panel__search-icon {
@@ -126,8 +119,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.9rem;
-  color: #cbd5e1;
+  font-size: var(--font-size-base);
   cursor: pointer;
 }
 
@@ -137,8 +129,8 @@
 }
 
 .preferences-panel__no-results {
-  font-size: 0.85rem;
-  color: #94a3b8;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
   padding: 4px;
 }
 
@@ -153,7 +145,7 @@
   flex-direction: column;
   gap: 6px;
   padding: 8px;
-  background: #1e293b;
+  background: var(--color-bg-secondary);
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   margin-top: 4px;
@@ -165,15 +157,15 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.85rem;
-  color: #cbd5e1;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
   cursor: pointer;
 }
 
 .preferences-panel__tag-checkbox input[type="checkbox"] {
   width: 16px;
   height: 16px;
-  accent-color: #64748b;
+  accent-color: var(--color-accent);
 }
 
 .preferences-panel__dropdown::-webkit-scrollbar {
@@ -186,4 +178,30 @@
 .preferences-panel__dropdown::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.2);
   border-radius: 4px;
+}
+
+.preferences-panel__heading {
+  color: var(--color-text-primary);
+}
+
+.preferences-panel__label {
+  color: var(--color-text-primary);
+}
+
+.preferences-panel__range-val {
+  color: var(--color-text-primary);
+}
+
+.preferences-panel__checkbox {
+  color: var(--color-text-primary);
+}
+
+.preferences-panel__input {
+  border: 1px solid var(--color-accent);
+  background: var(--color-bg-main);
+  color: var(--color-text-primary);
+}
+
+.preferences-panel__game-item label {
+  color: var(--color-text-primary);
 }

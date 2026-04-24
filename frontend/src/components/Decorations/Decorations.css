@@ -1,7 +1,14 @@
-.decorations{
+.decorations {
     width: 100%;
     height: 100%;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-end;
+}
+
+.decor-image {
+    max-width: 70%;
+    max-height: 70%;
+    object-fit: contain;
+    margin-bottom: 15%;
 }

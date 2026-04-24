@@ -134,7 +134,7 @@ func CreateTasteProfile(steamService *steam.ScrapingService, profileURL string, 
 		}
 
 		playtimeShare := float64(playtime) / float64(totalPlaytime)
-		playtimeMultiplier := math.Log1p(playtimeShare*100) / math.Log1p(100)
+		playtimeMultiplier := math.Log1p(playtimeShare*100) / math.Log1p(100) / 2
 
 		if _, exists := prioritizedGamesSet[gameID]; exists {
 			playtimeMultiplier += 0.3

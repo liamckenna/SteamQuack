@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import "./SignInPanel.css";
 import SteamLogoImage from "../../assets/images/Steam_icon_logo.png";
 import { useDialogue } from "../../context/DialogueContext";
+import { useDucktor } from "../../context/DucktorContext";
+import FolderPager from "./FolderPager";
 
 function SearchIcon() {
   return <span className="signin-panel__search-icon">⌕</span>;
@@ -56,6 +58,7 @@ export default function SignInPanel({ onAuthStateChange }: SignInPanelProps) {
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
   const [isProfilePublic, setIsProfilePublic] = useState(true);
   const { startDialogue } = useDialogue();
+  const { setEyes } = useDucktor();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -82,6 +85,7 @@ export default function SignInPanel({ onAuthStateChange }: SignInPanelProps) {
         setIsProfilePublic(data.user.public);
         onAuthStateChange(true);
         startDialogue("signInSuccess");
+        setEyes("happy");
       })
       .catch((err) => {
         console.error(err);
@@ -132,6 +136,7 @@ export default function SignInPanel({ onAuthStateChange }: SignInPanelProps) {
     } catch (err) {
       console.error("Textbox search failed:", err);
       startDialogue("signInFailure");
+      setEyes("sad");
       alert(err instanceof Error ? err.message : "Textbox search failed");
     }
   }

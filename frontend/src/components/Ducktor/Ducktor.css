@@ -4,8 +4,37 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    position: relative;
+    
 }
-.ducktor img {
+
+.ducktor .duck-layer {
     max-width: 100%;
     max-height: 100%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -51%);
+    
+    
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-user-drag: none;
+    pointer-events: none;
+}
+
+.layer-bottom {
+    z-index: 1;
+}
+
+.layer-middle {
+    z-index: 2;
+}
+
+.layer-top {
+    z-index: 3;
+}
+
+.ducktor.clickable {
+    cursor: pointer;
 }

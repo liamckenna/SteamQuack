@@ -1,10 +1,10 @@
 import "./Decorations.css";
-import decorImage from "../../assets/images/Decor Sketch.png";
+import chairImage from "../../assets/images/Chair.png";
 
 export default function Decorations() {
     return (
         <div className="decorations">
-            Decorations box
+            <img src={chairImage} alt="Chair Decoration" className="decor-image" />
         </div>
     )
 }
