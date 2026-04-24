@@ -82,9 +82,9 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
   }, []);
 
   const sliderStyles = {
-    track: { backgroundColor: "#64748b" },
-    handle: { borderColor: "#cbd5e1", backgroundColor: "#cbd5e1" },
-    rail: { backgroundColor: "rgba(255, 255, 255, 0.15)" }
+    track: { backgroundColor: "var(--color-accent)" },
+    handle: { borderColor: "var(--color-accent)", backgroundColor: "var(--color-accent)" },
+    rail: { backgroundColor: "var(--color-bg-secondary)" }
   };
 
   const handleReset = () => {
@@ -111,7 +111,6 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
     <div className="preferences-panel">
       <div className="preferences-panel__section">        
         <div className="preferences-panel__sliders">
-          {/* Price range */}
           <div className="preferences-panel__field">
             <div className="preferences-panel__row">
               <span className="preferences-panel__label">Price Range ($)</span>
@@ -131,7 +130,6 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
             </div>
           </div>
 
-          {/* Review percentage range */}
           <div className="preferences-panel__field">
             <div className="preferences-panel__row">
               <span className="preferences-panel__label">Review Score (%)</span>
@@ -151,7 +149,6 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
             </div>
           </div>
 
-          {/* Release year range */}
           <div className="preferences-panel__field">
             <div className="preferences-panel__row">
               <span className="preferences-panel__label">Release Year</span>
@@ -171,7 +168,6 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
             </div>
           </div>
 
-          {/* Review count range */}
           <div className="preferences-panel__field">
             <div className="preferences-panel__row">
               <span className="preferences-panel__label">Total Reviews</span>
@@ -192,7 +188,6 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
             </div>
           </div>
 
-          {/* Randomizer Range*/}
           <div className="preferences-panel__field" style={{ marginBottom: "12px" }}>
             <div className="preferences-panel__row">
               <span className="preferences-panel__label">Randomization Factor</span>
@@ -212,7 +207,6 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
             </div>
           </div>
 
-          {/* Prioritize games on sale toggle */}
           <label className="preferences-panel__checkbox">
             <input
               type="checkbox"
@@ -224,7 +218,6 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
         </div>
       </div>
 
-      {/* Filter/Prioritize games/tags section */}
       <div className="preferences-panel__section" ref={containerRef}>
          <div className="preferences-panel__two-col">
             <div className="preferences-panel__field" style={{ position: "relative" }}>

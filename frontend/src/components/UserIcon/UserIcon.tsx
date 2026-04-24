@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import "./UserIcon.css";
 import DefaultIcon from "../../assets/images/steam_default.png";
+import ProfileFrame from "../../assets/images/Profile-Frame.png";
 
 type SteamAuthUserResponse = {
   user: {
@@ -39,6 +40,12 @@ export default function UserIcon() {
       <img
         src={avatarUrl ?? DefaultIcon}
         alt={avatarUrl ? "Steam User Icon" : "Default User Icon"}
+        className="avatar"
+      />
+      <img
+        src={ProfileFrame}
+        alt="Profile Frame"
+        className="frame"
       />
     </div>
   );

@@ -4,8 +4,27 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative;
 }
-.user-icon img {
-  min-width: 60%;
-  min-height: 60%;
+
+.user-icon .avatar,
+.user-icon .frame {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.user-icon .avatar {
+  z-index: 1;
+  width: 50%;
+  height: auto;
+}
+
+.user-icon .frame {
+  z-index: 2;
+  pointer-events: none;
+
+  width: 57%;
+  height: auto;
 }
