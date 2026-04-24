@@ -148,6 +148,7 @@ type SteamOwnedGame struct {
 	AppID           uint32 `json:"appid"`
 	Name            string `json:"name"`
 	PlaytimeForever int    `json:"playtime_forever"` // in minutes
+	Playtime2Weeks  int    `json:"playtime_2weeks"`  // in minutes
 }
 
 type Settings struct {

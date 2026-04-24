@@ -1,5 +1,9 @@
+.recharts-wrapper :focus {
+    outline: none !important;
+}
+
 .diagnostics-panel {
-  max-width: 560px;
+  max-width: 660px;
   margin: 0 auto;
   padding: 8px 0;
 }
@@ -42,6 +46,16 @@
   color: #f1f5f9;
 }
 
+.diagnostics-panel__recently-played {
+  display: flex;
+  justify-content: space-around;
+}
+
+.diagnostics-panel__recently-played img {
+  width: 100%;
+  height: auto;
+}
+
 .diagnostics-panel__dream-game {
   margin-top: 16px;
   padding: 12px;
@@ -82,8 +96,14 @@
 
 .diagnostics-panel__charts {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
   gap: 16px;
+}
+
+.diagnostics-panel__chart-wrapper {
+  flex: 1;
+  min-width: 220px;
 }
 
 .diagnostics-panel__pie-wrap {
