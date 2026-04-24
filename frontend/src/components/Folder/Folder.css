@@ -27,7 +27,7 @@
   border-radius: 12px 12px 0 0;
   background: var(--color-bg-secondary);
   color: var(--color-text-secondary);
-  font-size: 0.95rem;
+  font-size: var(--font-size-lg);
   font-weight: 500;
   cursor: pointer;
   margin-right: 2px;

@@ -4,7 +4,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Cardo:ital,wght@0,400;0,700;1,400&display=swap');
 
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Domine', 'Gilda Display', 'Instrument Serif', 'Cardo', system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
@@ -23,6 +23,10 @@
   --color-text-primary: #292929;
   --color-text-secondary: #3e5869;
   --color-accent: #528ac9;
+  
+  --font-size-base: 1rem;
+  --font-size-lg: 1.25rem;
+  --font-size-sm: 0.875rem;
 
 }
 

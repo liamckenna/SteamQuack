@@ -14,14 +14,14 @@
 
 .prescription-panel__detail-desc {
   margin: 0 0 8px;
-  font-size: 0.9rem;
+  font-size: var(--font-size-base);
   color: var(--color-text-secondary);
   line-height: 1.45;
 }
 
 .prescription-panel__detail-meta {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
 }
 
@@ -29,7 +29,7 @@
   margin: 0;
   padding: 16px;
   color: var(--color-text-secondary);
-  font-size: 0.9rem;
+  font-size: var(--font-size-base);
 }
 
 .prescription-panel__body {
@@ -50,7 +50,7 @@
 
 .prescription-panel__sort-title {
   margin: 0 0 4px;
-  font-size: 0.9rem;
+  font-size: var(--font-size-base);
   font-weight: 600;
   color: var(--color-text-primary);
 }
@@ -62,7 +62,7 @@
   border: none;
   background: transparent;
   color: var(--color-text-secondary);
-  font-size: 0.9rem;
+  font-size: var(--font-size-base);
   cursor: pointer;
   transition: background 0.15s;
 }
@@ -129,7 +129,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.8rem;
+  font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   background: var(--color-bg-tertiary);
 }
@@ -146,13 +146,13 @@
   border-radius: 4px;
   background: var(--color-accent);
   color: #fff;
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   font-weight: 600;
 }
 
 .prescription-panel__card-title {
   margin-top: 8px;
-  font-size: 0.85rem;
+  font-size: var(--font-size-sm);
   color: var(--color-text-primary);
   line-height: 1.3;
   overflow: hidden;

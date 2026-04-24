@@ -59,7 +59,7 @@
 
 .speech__continue {
     margin-top: 0.5rem;
-    font-size: 0.9rem;
+    font-size: var(--font-size-base);
     animation: bounce 1s infinite;
 }
 
