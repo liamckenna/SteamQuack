@@ -59,6 +59,7 @@ export type PrescriptionPanelProps = {
     releaseYearRange: [number, number];
     reviewCountRange: [number, number];
     prioritizeSale: boolean;
+    prioritizeRecentPlaytime: boolean;
     prioritizedTags: string[];
     excludedTags: string[];
     prioritizedGames: number[];
@@ -83,14 +84,12 @@ export default function PrescriptionPanel({
   if (!userID) return <div>Please sign in first.</div>;
 
   useEffect(() => {
-    // Define the async fetch function
     const fetchRecommendations = async () => {
       setIsLoading(true);
       setError(null);
       onLoadingChange(true);
 
       try {
-        // maps slider/search values back into backend json
         const backendSettings = {
           price_floor: preferences.priceRange[0],
           price_ceiling: preferences.priceRange[1],
@@ -101,6 +100,8 @@ export default function PrescriptionPanel({
           review_count_floor: preferences.reviewCountRange[0],
           review_count_ceiling: preferences.reviewCountRange[1],
           prioritize_games_on_sale: preferences.prioritizeSale,
+          prioritize_recently_played_games:
+          preferences.prioritizeRecentPlaytime,
           prioritized_tags: preferences.prioritizedTags,
           excluded_tags: preferences.excludedTags,
           prioritized_games: preferences.prioritizedGames,
@@ -120,18 +121,15 @@ export default function PrescriptionPanel({
       }
     };
 
-    // Only fetch if a userID is provided
     if (userID) {
       fetchRecommendations();
     }
-  }, [userID, preferences]); // The effect re-runs if userID changes or if preferences change
+  }, [userID, preferences]);
 
-  // Handle loading and error states
   if (isLoading) return <div>Loading your recommendations...</div>;
   if (error) return <div>{error}</div>;
   if (recommendations.length === 0) return <div>No recommendations found.</div>;
 
-  // Render the component
   return (
     <div className="prescription-panel">
       <div className="prescription-panel__grid">

@@ -107,7 +107,6 @@ func CreateRecommendations(steamService *steam.ScrapingService, tasteProfile map
 }
 
 func CreateTasteProfile(steamService *steam.ScrapingService, profileURL string, settings steam.Settings) map[string]float64 {
-
 	gamePlaytimeMap := GetUserAppsAndPlaytime(steamService, profileURL)
 	userTagWeights := make(map[string]float64)
 
@@ -143,8 +142,15 @@ func CreateTasteProfile(steamService *steam.ScrapingService, profileURL string, 
 		playtimeAllTimeShare := float64(playtime.PlaytimeAllTime) / float64(totalPlaytimeAllTime)
 		playtimeAllTimeMultiplier := math.Log1p(playtimeAllTimeShare*100) / math.Log1p(100) / 2
 
-		playtime2WeeksShare := float64(playtime.Playtime2Weeks) / float64(totalPlaytime2Weeks)
-		playtime2WeeksMultiplier := math.Log1p(playtime2WeeksShare*100) / math.Log1p(100) / 2
+		playtime2WeeksMultiplier := 0.0
+		if totalPlaytime2Weeks > 0 && playtime.Playtime2Weeks > 0 {
+			playtime2WeeksShare := float64(playtime.Playtime2Weeks) / float64(totalPlaytime2Weeks)
+			playtime2WeeksMultiplier = math.Log1p(playtime2WeeksShare*100) / math.Log1p(100) / 4
+		}
+
+		if settings.PrioritizeRecentlyPlayedGames {
+			playtime2WeeksMultiplier *= 4
+		}
 
 		playtimeMultiplier := playtimeAllTimeMultiplier + playtime2WeeksMultiplier
 
@@ -155,7 +161,7 @@ func CreateTasteProfile(steamService *steam.ScrapingService, profileURL string, 
 		gameTagWeights := tags.GetBaseTagWeights(gameID)
 
 		for tag, weight := range gameTagWeights {
-			if weight > 0 && weight <= 1 { //filters out broken tags
+			if weight > 0 && weight <= 1 {
 				category := tagCategories[tag]
 				tagMultiplier := tagCategoryWeights[category] * weight
 				userTagWeights[tag] += playtimeMultiplier * tagMultiplier
@@ -173,7 +179,7 @@ func CreateTasteProfile(steamService *steam.ScrapingService, profileURL string, 
 		for tag := range userTagWeights {
 			noise := 1.0 + settings.RandomizationFactor*(rand.Float64()*2.0-1.0)
 			if noise <= 0 {
-				noise = 0.01 //prevent negative weights
+				noise = 0.01
 			}
 			userTagWeights[tag] *= noise
 		}

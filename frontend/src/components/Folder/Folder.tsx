@@ -11,6 +11,7 @@ export type PreferencesState = {
   releaseYearRange: [number, number];
   reviewCountRange: [number, number];
   prioritizeSale: boolean;
+  prioritizeRecentPlaytime: boolean;
   prioritizedTags: string[];
   excludedTags: string[];
   prioritizedGames: number[];
@@ -38,12 +39,14 @@ export default function Folder() {
     releaseYearRange: [1970, new Date().getFullYear()],
     reviewCountRange: [0, 10000000],
     prioritizeSale: false,
+    prioritizeRecentPlaytime: false,
     prioritizedTags: [],
     excludedTags: ["NSFW", "Nudity", "Sexual Content"],
     prioritizedGames: [],
     excludedGames: [],
     randomizationFactor: 0.0,
   });
+
   function handleAuthStateChange(authenticated: boolean) {
     setIsSignedIn(authenticated);
 

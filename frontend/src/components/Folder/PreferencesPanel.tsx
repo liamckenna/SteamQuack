@@ -94,6 +94,7 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
       releaseYearRange: [1970, new Date().getFullYear()],
       reviewCountRange: [0, 10000000],
       prioritizeSale: false,
+      prioritizeRecentPlaytime: false,
       prioritizedTags: [],
       excludedTags: ["NSFW", "Nudity", "Sexual Content"],
       prioritizedGames: [],
@@ -207,14 +208,25 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
             </div>
           </div>
 
-          <label className="preferences-panel__checkbox">
-            <input
-              type="checkbox"
-              checked={preferences.prioritizeSale}
-              onChange={(e) => updatePref("prioritizeSale", e.target.checked)}
-            />
-            Prioritize Games on Sale
-          </label>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
+            <label className="preferences-panel__checkbox" style={{ margin: 0 }}>
+              <input
+                type="checkbox"
+                checked={preferences.prioritizeSale}
+                onChange={(e) => updatePref("prioritizeSale", e.target.checked)}
+              />
+              Prioritize Games on Sale
+            </label>
+
+            <label className="preferences-panel__checkbox" style={{ margin: 0 }}>
+              <input
+                type="checkbox"
+                checked={preferences.prioritizeRecentPlaytime}
+                onChange={(e) => updatePref("prioritizeRecentPlaytime", e.target.checked)}
+              />
+              Prioritize Recent Playtime
+            </label>
+          </div>
         </div>
       </div>
 

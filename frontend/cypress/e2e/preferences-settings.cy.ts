@@ -69,6 +69,13 @@ describe("Preferences Panel", () => {
     cy.contains("label", "Sexual Content").find('input[type="checkbox"]').should("be.checked");
   });
 
+  it("shows the recently played games checkbox next to prioritize games on sale", () => {
+    cy.visit("/");
+    cy.contains("button", "Preferences").click();
+    cy.contains("Prioritize recently played games").should("be.visible");
+    cy.contains("Prioritize Games on Sale").should("be.visible");
+  });
+
   it("can interact with the reset button", () => {
     cy.contains("button", "Reset Settings").should("exist").click();
   });
