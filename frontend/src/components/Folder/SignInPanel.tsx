@@ -28,6 +28,7 @@ type SteamAuthUserResponse = {
     steam_id: string;
     persona_name: string;
     avatar: string;
+    public: boolean;
   };
 };
 
@@ -46,11 +47,16 @@ type ProfileParseResponse = {
   };
 };
 
-export default function SignInPanel() {
+type SignInPanelProps = {
+  onAuthStateChange: (authenticated: boolean) => void;
+};
+
+export default function SignInPanel({ onAuthStateChange }: SignInPanelProps) {
   const [query, setQuery] = useState("");
   const [steamID, setSteamID] = useState<string | null>(null);
   const [steamName, setSteamName] = useState<string | null>(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
+  const [isProfilePublic, setIsProfilePublic] = useState(true);
   const { startDialogue } = useDialogue();
   const { setEyes } = useDucktor();
 
@@ -58,7 +64,11 @@ export default function SignInPanel() {
     const params = new URLSearchParams(window.location.search);
     const returnedSteamID = params.get("steamid");
 
-    if (!returnedSteamID) return;
+    if (!returnedSteamID) {
+      setIsProfilePublic(true);
+      onAuthStateChange(false);
+      return;
+    }
 
     setSteamID(returnedSteamID);
     setIsLoadingProfile(true);
@@ -72,16 +82,20 @@ export default function SignInPanel() {
       })
       .then((data) => {
         setSteamName(data.user.persona_name);
+        setIsProfilePublic(data.user.public);
+        onAuthStateChange(true);
         startDialogue("signInSuccess");
         setEyes("happy");
       })
       .catch((err) => {
         console.error(err);
+        onAuthStateChange(false);
+        setIsProfilePublic(true);
       })
       .finally(() => {
         setIsLoadingProfile(false);
       });
-  }, []);
+  }, [onAuthStateChange, startDialogue]);
 
   async function onSearchSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -131,14 +145,16 @@ export default function SignInPanel() {
   }
 
   function onSignOut() {
+    onAuthStateChange(false);
+
     const url = new URL(window.location.href);
     url.searchParams.delete("steamid");
     window.location.href = url.pathname + url.search;
   }
 
   if (steamID) {
-    const pages = [
-      <div className="signin-panel__welcome-page" key="welcome">
+    return (
+      <div className="signin-panel">
         <div className="signin-panel__welcome">
           <h2 className="signin-panel__welcome-title">
             {isLoadingProfile
@@ -147,16 +163,22 @@ export default function SignInPanel() {
           </h2>
 
           <p className="signin-panel__welcome-subtitle">Steam ID: {steamID}</p>
-        </div>
-      </div>,
-
-      <div className="signin-panel__signout-page" key="signout">
-        <div className="signin-panel__welcome">
-          <h2 className="signin-panel__welcome-title">Account</h2>
-          <p className="signin-panel__welcome-subtitle">
-            You are currently signed in as {steamName ?? "Steam user"}.
-          </p>
-
+          {!isLoadingProfile && !isProfilePublic && (
+            <div className="signin-panel__private-warning">
+              <p className="signin-panel__private-warning-text">
+                Recommendations can only be generated if your game details are public and
+                the "Always keep my total playtime private" option is unchecked.
+              </p>
+              <a
+                className="signin-panel__private-warning-link"
+                href="https://help.steampowered.com/en/faqs/view/588C-C67D-0251-C276"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Make your Steam profile public
+              </a>
+            </div>
+          )}
           <button
             type="button"
             className="signin-panel__signout-btn"
@@ -165,12 +187,6 @@ export default function SignInPanel() {
             Sign out
           </button>
         </div>
-      </div>,
-    ];
-
-    return (
-      <div className="signin-panel signin-panel--paged">
-        <FolderPager pages={pages} />
       </div>
     );
   }
