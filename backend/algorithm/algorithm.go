@@ -22,6 +22,11 @@ type GameScore struct {
 	Name   string
 }
 
+type GamePlaytime struct {
+	PlaytimeAllTime uint32
+	Playtime2Weeks  uint32
+}
+
 func CreateRecommendations(steamService *steam.ScrapingService, tasteProfile map[string]float64, settings steam.Settings) []GameScore {
 
 	db := database.GetDB()
@@ -119,13 +124,15 @@ func CreateTasteProfile(steamService *steam.ScrapingService, profileURL string, 
 		prioritizedGamesSet[id] = struct{}{}
 	}
 
-	totalPlaytime := uint32(0)
+	totalPlaytimeAllTime := uint32(0)
+	totalPlaytime2Weeks := uint32(0)
 	for _, playtime := range gamePlaytimeMap {
-		totalPlaytime += playtime
+		totalPlaytimeAllTime += playtime.PlaytimeAllTime
+		totalPlaytime2Weeks += playtime.Playtime2Weeks
 	}
 
 	for gameID, playtime := range gamePlaytimeMap {
-		if playtime <= 0 {
+		if playtime.PlaytimeAllTime <= 0 {
 			continue
 		}
 
@@ -133,8 +140,13 @@ func CreateTasteProfile(steamService *steam.ScrapingService, profileURL string, 
 			continue
 		}
 
-		playtimeShare := float64(playtime) / float64(totalPlaytime)
-		playtimeMultiplier := math.Log1p(playtimeShare*100) / math.Log1p(100) / 2
+		playtimeAllTimeShare := float64(playtime.PlaytimeAllTime) / float64(totalPlaytimeAllTime)
+		playtimeAllTimeMultiplier := math.Log1p(playtimeAllTimeShare*100) / math.Log1p(100) / 2
+
+		playtime2WeeksShare := float64(playtime.Playtime2Weeks) / float64(totalPlaytime2Weeks)
+		playtime2WeeksMultiplier := math.Log1p(playtime2WeeksShare*100) / math.Log1p(100) / 2
+
+		playtimeMultiplier := playtimeAllTimeMultiplier + playtime2WeeksMultiplier
 
 		if _, exists := prioritizedGamesSet[gameID]; exists {
 			playtimeMultiplier += 0.3
@@ -184,9 +196,9 @@ func CreateTasteProfile(steamService *steam.ScrapingService, profileURL string, 
 	return userTagWeights
 }
 
-func GetUserAppsAndPlaytime(steamService *steam.ScrapingService, profileURL string) map[uint32]uint32 {
+func GetUserAppsAndPlaytime(steamService *steam.ScrapingService, profileURL string) map[uint32]GamePlaytime {
 
-	gamePlaytimes := make(map[uint32]uint32)
+	gamePlaytimes := make(map[uint32]GamePlaytime)
 
 	// api call to get app ids and playtime for all games in the user's profile
 	userOwnedGames, err := steamService.GetUserOwnedGames(profileURL)
@@ -200,7 +212,10 @@ func GetUserAppsAndPlaytime(steamService *steam.ScrapingService, profileURL stri
 
 	for i := 0; i < gameCount; i++ {
 		game := gamez[i]
-		gamePlaytimes[game.AppID] = uint32(game.PlaytimeForever)
+		gamePlaytimes[game.AppID] = GamePlaytime{
+			PlaytimeAllTime: uint32(game.PlaytimeForever),
+			Playtime2Weeks:  uint32(game.Playtime2Weeks),
+		}
 	}
 
 	return gamePlaytimes
