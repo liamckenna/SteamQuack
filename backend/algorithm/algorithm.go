@@ -145,7 +145,7 @@ func CreateTasteProfile(steamService *steam.ScrapingService, profileURL string, 
 		playtime2WeeksMultiplier := 0.0
 		if totalPlaytime2Weeks > 0 && playtime.Playtime2Weeks > 0 {
 			playtime2WeeksShare := float64(playtime.Playtime2Weeks) / float64(totalPlaytime2Weeks)
-			playtime2WeeksMultiplier = math.Log1p(playtime2WeeksShare*100) / math.Log1p(100) / 4
+			playtime2WeeksMultiplier = math.Log1p(playtime2WeeksShare*100) / math.Log1p(100) / 3
 		}
 
 		if settings.PrioritizeRecentlyPlayedGames {
@@ -177,7 +177,7 @@ func CreateTasteProfile(steamService *steam.ScrapingService, profileURL string, 
 
 	if settings.RandomizationFactor > 0 {
 		for tag := range userTagWeights {
-			noise := 1.0 + settings.RandomizationFactor*(rand.Float64()*2.0-1.0)
+			noise := 1.0 + settings.RandomizationFactor*(rand.Float64()*2.0-1.0)*3
 			if noise <= 0 {
 				noise = 0.01
 			}
@@ -196,7 +196,9 @@ func CreateTasteProfile(steamService *steam.ScrapingService, profileURL string, 
 
 	fmt.Println("--- User Taste Profile ---")
 	for _, k := range keys {
-		fmt.Printf("%s: %.2f\n", k, userTagWeights[k])
+		if userTagWeights[k] > 0 {
+			fmt.Printf("%s: %.2f\n", k, userTagWeights[k])
+		}
 	}
 
 	return userTagWeights

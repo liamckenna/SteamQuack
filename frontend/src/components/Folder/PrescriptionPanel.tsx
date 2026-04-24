@@ -1,5 +1,5 @@
 import "./PrescriptionPanel.css";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { getRecommendations, type Recommendation } from "../../api";
 import { useDialogue } from "../../context/DialogueContext";
 
@@ -17,6 +17,8 @@ export const GameTile = ({ game }: GameTileProps) => {
             100,
         )
       : 0;
+  
+  const { startDialogue } = useDialogue();
 
   return (
     <button
@@ -25,16 +27,27 @@ export const GameTile = ({ game }: GameTileProps) => {
       onDoubleClick={ () => {
         window.open('https://store.steampowered.com/app/' + game.game_id, '_blank');
       }}
-      onClick={ async () => {
-        const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
-        await delay(500)
-        window.alert(
-          game.name + "\n" +
-          "$" + game.current_price + "\n" +
-          (new Date(game.release_date_unix * 1000)).toLocaleDateString() + "\n" +
-          Math.round(game.review_percentage) + "% (" + game.review_count + ")" + "\n" +
-          "[DEBUG] Score: " + game.score
-        )
+      onClick={() => {
+        if (discountPercent > 0) {
+          startDialogue("readGameDescriptionSale", {
+            "GameName": game.name,
+            "ReviewScore": game.review_percentage.toFixed(0),
+            "ReviewCount": game.review_count,
+            "GameDescription": game.description || "I don't have a description for this one!",
+            "ReleaseDate": new Date(game.release_date_unix * 1000).toLocaleDateString(),
+            "Price": game.current_price > 0 ? `$${game.current_price.toFixed(2)}` : "Free",
+            "Discount": discountPercent,
+          });
+        } else {
+          startDialogue("readGameDescription", {
+            "GameName": game.name,
+            "ReviewScore": game.review_percentage.toFixed(0),
+            "ReviewCount": game.review_count,
+            "GameDescription": game.description || "I don't have a description for this one!",
+            "ReleaseDate": new Date(game.release_date_unix * 1000).toLocaleDateString(),
+            "Price": game.current_price > 0 ? `$${game.current_price.toFixed(2)}` : "Free",
+          });
+        }
       }}
     >
       <div className="prescription-panel__card-cover">
@@ -80,8 +93,17 @@ export default function PrescriptionPanel({
   const queryParams = new URLSearchParams(window.location.search);
   const userID = queryParams.get("steamid");
   const { startDialogue } = useDialogue();
+  const hasInitialized = useRef(false);
 
   if (!userID) return <div>Please sign in first.</div>;
+
+  useEffect(() => {
+    if (hasInitialized.current) return;
+    hasInitialized.current = true;
+
+    startDialogue("openPrescription");
+
+  }, [startDialogue]);
 
   useEffect(() => {
     const fetchRecommendations = async () => {
@@ -111,7 +133,11 @@ export default function PrescriptionPanel({
 
         const response = await getRecommendations(userID, backendSettings);
         setRecommendations(response.recommendations || []);
-        startDialogue("generalPrescription");
+        if (response.recommendations.length === 0) {
+          startDialogue("noResults");
+        } else {
+          startDialogue("generalPrescription");
+        }        
       } catch (err) {
         console.error("Error fetching recommendations:", err);
         setError("Failed to load game recommendations.");

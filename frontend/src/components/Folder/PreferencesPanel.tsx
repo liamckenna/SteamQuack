@@ -39,6 +39,7 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
   const [allTags, setAllTags] = useState<string[]>([]);
   const [allGames, setAllGames] = useState<GameOption[]>([]);
   const { startDialogue } = useDialogue();
+  const hasInitialized = useRef(false);
 
   // load from backend on mount
   useEffect(() => {
@@ -68,7 +69,9 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
   }, []);
 
   useEffect(() => {
-    startDialogue("generalPreferences");
+    if (hasInitialized.current) return;
+    hasInitialized.current = true;
+    startDialogue("openPreferences");
   }, []);
 
   // update helper functions mapped to parent state
@@ -158,6 +161,7 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
                 onChange={(val) => {
                   const [min, max] = val as [number, number];
                   updatePref("priceRange", [min, max === 100 ? Number.MAX_SAFE_INTEGER : max]);
+                  startDialogue("priceRange");
                 }}
                 styles={sliderStyles}
               />
@@ -177,7 +181,10 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
                 min={0}
                 max={100}
                 value={preferences.reviewRange}
-                onChange={(val) => updatePref("reviewRange", val as [number, number])}
+                onChange={(val) => {
+                  updatePref("reviewRange", val as [number, number]);
+                  startDialogue("reviewRange");
+                }}
                 styles={sliderStyles}
               />
             </div>
@@ -196,7 +203,10 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
                 min={1970}
                 max={new Date().getFullYear()}
                 value={preferences.releaseYearRange}
-                onChange={(val) => updatePref("releaseYearRange", val as [number, number])}
+                onChange={(val) => {
+                  updatePref("releaseYearRange", val as [number, number]);
+                  startDialogue("releaseYearRange");
+                }}
                 styles={sliderStyles}
               />
             </div>
@@ -229,6 +239,7 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
                     reviewSliderToVal(minSlider),
                     reviewSliderToVal(maxSlider)
                   ]);
+                  startDialogue("reviewCountRange");
                 }}
                 styles={sliderStyles}
               />
@@ -248,7 +259,10 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
                 max={1}
                 step={0.01}
                 value={preferences.randomizationFactor}
-                onChange={(val) => updatePref("randomizationFactor", val as number)}
+                onChange={(val) => {
+                  updatePref("randomizationFactor", val as number);
+                  startDialogue("randomizationFactor");
+                }}
                 styles={sliderStyles}
               />
             </div>
@@ -259,7 +273,10 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
               <input
                 type="checkbox"
                 checked={preferences.prioritizeSale}
-                onChange={(e) => updatePref("prioritizeSale", e.target.checked)}
+                onChange={(e) => {
+                  updatePref("prioritizeSale", e.target.checked);
+                  startDialogue("prioritizeSale");
+                }}
               />
               Prioritize Games on Sale
             </label>
@@ -268,7 +285,10 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
               <input
                 type="checkbox"
                 checked={preferences.prioritizeRecentPlaytime}
-                onChange={(e) => updatePref("prioritizeRecentPlaytime", e.target.checked)}
+                onChange={(e) => {
+                  updatePref("prioritizeRecentPlaytime", e.target.checked);
+                  startDialogue("prioritizeRecentPlaytime");
+                }}
               />
               Prioritize Recent Playtime
             </label>
@@ -291,8 +311,12 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
                     setShowExcludeTagsDropdown(false);
                     setShowPrioritizeGamesDropdown(false);
                     setShowExcludeGamesDropdown(false);
+                    startDialogue("prioritizeTagsSearch");
                   }}
-                  onChange={(e) => setPrioritizeTagSearch(e.target.value)}
+                onChange={(e) => {
+                  setPrioritizeTagSearch(e.target.value) 
+                  
+                }}
                 />
               </div>
               {showPrioritizeTagsDropdown && (
@@ -345,8 +369,11 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
                     setShowPrioritizeTagsDropdown(false);
                     setShowPrioritizeGamesDropdown(false);
                     setShowExcludeGamesDropdown(false);
+                    startDialogue("excludeTagsSearch");
                   }}
-                  onChange={(e) => setExcludeTagSearch(e.target.value)}
+                  onChange={(e) => {
+                    setExcludeTagSearch(e.target.value);
+                  }}
                 />
               </div>
               {showExcludeTagsDropdown && (
@@ -402,8 +429,11 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
                     setShowExcludeGamesDropdown(false);
                     setShowPrioritizeTagsDropdown(false);
                     setShowExcludeTagsDropdown(false);
+                    startDialogue("prioritizeGamesSearch");
                   }}
-                  onChange={(e) => setPrioritizeGameSearch(e.target.value)}
+                  onChange={(e) => {
+                    setPrioritizeGameSearch(e.target.value);
+                  }}
                 />
               </div>
               {showPrioritizeGamesDropdown && (
@@ -458,8 +488,11 @@ export default function PreferencesPanel({ preferences, setPreferences }: Prefer
                     setShowPrioritizeGamesDropdown(false);
                     setShowPrioritizeTagsDropdown(false);
                     setShowExcludeTagsDropdown(false);
+                    startDialogue("excludeGamesSearch");
                   }}
-                  onChange={(e) => setExcludeGameSearch(e.target.value)}
+                  onChange={(e) => {
+                    setExcludeGameSearch(e.target.value);
+                  }}
                 />
               </div>
               {showExcludeGamesDropdown && (

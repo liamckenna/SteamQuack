@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import "./SignInPanel.css";
 import SteamLogoImage from "../../assets/images/Steam_icon_logo.png";
 import { useDialogue } from "../../context/DialogueContext";
+import { getUserProfile } from "../../api";
 import FolderPager from "./FolderPager";
 
 function SearchIcon() {
@@ -56,9 +57,14 @@ export default function SignInPanel({ onAuthStateChange }: SignInPanelProps) {
   const [steamName, setSteamName] = useState<string | null>(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
   const [isProfilePublic, setIsProfilePublic] = useState(true);
-  const { startDialogue } = useDialogue();
+
+  const { startDialogue, resetDialogue, lockDialogue, unlockDialogue } = useDialogue();
+
+  const hasAttemptedLogin = useRef(false);
 
   useEffect(() => {
+    if (hasAttemptedLogin.current) return;
+
     const params = new URLSearchParams(window.location.search);
     const returnedSteamID = params.get("steamid");
 
@@ -68,8 +74,14 @@ export default function SignInPanel({ onAuthStateChange }: SignInPanelProps) {
       return;
     }
 
+    hasAttemptedLogin.current = true;
+
     setSteamID(returnedSteamID);
     setIsLoadingProfile(true);
+
+    unlockDialogue();
+    
+    lockDialogue();
 
     fetch(`http://localhost:8080/api/auth/steam-user/${returnedSteamID}`)
       .then((res) => {
@@ -78,24 +90,68 @@ export default function SignInPanel({ onAuthStateChange }: SignInPanelProps) {
         }
         return res.json() as Promise<SteamAuthUserResponse>;
       })
-      .then((data) => {
+      .then(async (data) => {
         setSteamName(data.user.persona_name);
         setIsProfilePublic(data.user.public);
-        onAuthStateChange(true);
-        startDialogue("signInSuccess");
+
+        if (!data.user.public) {
+          unlockDialogue();
+          startDialogue("signInPrivate");
+          onAuthStateChange(false);
+          return;
+        }
+
+        try {
+          const profileData = await getUserProfile(returnedSteamID);
+          const ownedGames = profileData.owned_games || [];
+
+          const totalPlaytime = ownedGames.reduce((sum: number, game: any) => sum + (game.playtime_forever || 0), 0);
+
+          if (totalPlaytime > 0) {
+            unlockDialogue();
+            startDialogue("signInSuccess", { username: data.user.persona_name });
+            lockDialogue();
+
+            setTimeout(() => {
+              unlockDialogue();
+            }, 1000);
+
+            onAuthStateChange(true);
+
+          } else {
+            unlockDialogue();
+            startDialogue("signInPrivatePlaytimes");
+            setIsProfilePublic(false);
+            onAuthStateChange(false);
+          }
+        } catch (err) {
+          console.error("Failed to fetch games for playtime check", err);
+          unlockDialogue();
+          if (data.user.public) {
+            startDialogue("signInPrivatePlaytimes");
+            setIsProfilePublic(false);
+            onAuthStateChange(false);
+          } else {
+            startDialogue("signInFailure");
+          }
+        }
       })
       .catch((err) => {
         console.error(err);
+        unlockDialogue();
+        startDialogue("signInFailure");
         onAuthStateChange(false);
         setIsProfilePublic(true);
       })
       .finally(() => {
         setIsLoadingProfile(false);
       });
-  }, [onAuthStateChange, startDialogue]);
+  }, [onAuthStateChange, startDialogue, lockDialogue, unlockDialogue]);
 
   async function onSearchSubmit(e: React.FormEvent) {
     startDialogue("fetchingProfile");
+
+    lockDialogue();
     e.preventDefault();
 
     const trimmedQuery = query.trim();
@@ -132,9 +188,8 @@ export default function SignInPanel({ onAuthStateChange }: SignInPanelProps) {
 
       window.location.href = `${window.location.origin}/?steamid=${resolvedSteamID}`;
     } catch (err) {
-      console.error("Textbox search failed:", err);
+      unlockDialogue();
       startDialogue("signInFailure");
-      alert(err instanceof Error ? err.message : "Textbox search failed");
     }
   }
   function onSteamSignInClick() {
@@ -143,7 +198,7 @@ export default function SignInPanel({ onAuthStateChange }: SignInPanelProps) {
 
   function onSignOut() {
     onAuthStateChange(false);
-
+    resetDialogue("signInSuccess");
     const url = new URL(window.location.href);
     url.searchParams.delete("steamid");
     window.location.href = url.pathname + url.search;
@@ -193,12 +248,12 @@ export default function SignInPanel({ onAuthStateChange }: SignInPanelProps) {
       <p className="signin-panel__instruction">
         Enter your Steam profile URL or unique username
       </p>
-
       <form className="signin-panel__input-row" onSubmit={onSearchSubmit}>
         <input
           className="signin-panel__input"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          onClick={() => startDialogue("steamURLInstruction")}
           type="text"
           inputMode="url"
           autoComplete="off"

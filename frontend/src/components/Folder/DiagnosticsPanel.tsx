@@ -1,7 +1,9 @@
 import './DiagnosticsPanel.css';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { getDiagnostics, type DiagnosticsResponse } from "../../api";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, type RenderableText, type TooltipValueType } from 'recharts';
+import { useDialogue } from "../../context/DialogueContext";
+
 
 // --- Helper Functions ---
 const minutesToHours = (minutes: number) => (minutes / 60).toFixed(1);
@@ -39,11 +41,14 @@ const COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#6366f1'
 
 // --- Component ---
 export default function DiagnosticsPanel() {
+
   const [data, setData] = useState<DiagnosticsResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const queryParams = new URLSearchParams(window.location.search);
   const userID = queryParams.get('steamid');
+  const { startDialogue } = useDialogue();
+  const hasInitialized = useRef(false);
 
   if (!userID) return <div>Please sign in first.</div>;
 
@@ -53,6 +58,9 @@ export default function DiagnosticsPanel() {
         setLoading(true);
         const result = await getDiagnostics(userID);
         setData(result);
+        if (hasInitialized.current) return;
+        hasInitialized.current = true;
+        startDialogue("openDiagnostics");
       } catch (err) {
         setError('Failed to fetch diagnostics.');
       } finally {
