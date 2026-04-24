@@ -57,19 +57,33 @@ export default function Ducktor() {
     }, [isActive, currentLine, setMouth, setEyes]);
 
     useEffect(() => {
-        let blinkTimeout: NodeJS.Timeout;
-        let openTimeout: NodeJS.Timeout;
+        let t1: NodeJS.Timeout;
+        let t2: NodeJS.Timeout;
+        let t3: NodeJS.Timeout;
+        let t4: NodeJS.Timeout;
 
         const scheduleNextBlink = () => {
             const nextBlinkIn = Math.random() * 4000 + 2000;
 
-            blinkTimeout = setTimeout(() => {
+            t1 = setTimeout(() => {
                 setIsBlinking(true);
 
-                openTimeout = setTimeout(() => {
+                t2 = setTimeout(() => {
                     setIsBlinking(false);
-                    scheduleNextBlink();
-                }, 150);
+
+                    if (Math.random() < 0.2) {
+                        t3 = setTimeout(() => {
+                            setIsBlinking(true);
+
+                            t4 = setTimeout(() => {
+                                setIsBlinking(false);
+                                scheduleNextBlink();
+                            }, 100);
+                        }, 100);
+                    } else {
+                        scheduleNextBlink();
+                    }
+                }, 120);
 
             }, nextBlinkIn);
         };
@@ -77,8 +91,10 @@ export default function Ducktor() {
         scheduleNextBlink();
 
         return () => {
-            clearTimeout(blinkTimeout);
-            clearTimeout(openTimeout);
+            clearTimeout(t1);
+            clearTimeout(t2);
+            clearTimeout(t3);
+            clearTimeout(t4);
         };
     }, []);
 
