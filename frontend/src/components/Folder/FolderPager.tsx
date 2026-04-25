@@ -1,6 +1,5 @@
 import { ReactNode, useState } from "react";
 import "./FolderPager.css";
-// 1. Update the imports to point to your new graphics
 import nextArrow from "../../assets/images/Corner-Right.png"; 
 import prevArrow from "../../assets/images/Corner-Left.png";
 
