@@ -201,10 +201,20 @@ export default function SignInPanel({ onAuthStateChange }: SignInPanelProps) {
 
   function onSignOut() {
     onAuthStateChange(false);
+
+    setSteamID(null);
+    setSteamName(null);
+    completedLoginFor.current = null;
+    
     resetDialogue("signInSuccess");
+    
+    unlockDialogue();
+    startDialogue("signOutSuccess");
+
     const url = new URL(window.location.href);
     url.searchParams.delete("steamid");
-    window.location.href = url.pathname + url.search;
+    window.history.replaceState({}, "", url.pathname + url.search);
+    window.dispatchEvent(new Event("steamid-changed"));
   }
 
   if (steamID) {
