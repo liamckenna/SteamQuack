@@ -58,13 +58,13 @@ export default function SignInPanel({ onAuthStateChange }: SignInPanelProps) {
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
   const [isProfilePublic, setIsProfilePublic] = useState(true);
 
+
+
   const { startDialogue, resetDialogue, lockDialogue, unlockDialogue } = useDialogue();
 
-  const hasAttemptedLogin = useRef(false);
+  const completedLoginFor = useRef<string | null>(null);
 
   useEffect(() => {
-    if (hasAttemptedLogin.current) return;
-
     const params = new URLSearchParams(window.location.search);
     const returnedSteamID = params.get("steamid");
 
@@ -74,13 +74,14 @@ export default function SignInPanel({ onAuthStateChange }: SignInPanelProps) {
       return;
     }
 
-    hasAttemptedLogin.current = true;
+    if (completedLoginFor.current === returnedSteamID) return;
 
     setSteamID(returnedSteamID);
     setIsLoadingProfile(true);
 
+    completedLoginFor.current = returnedSteamID;
+
     unlockDialogue();
-    
     lockDialogue();
 
     fetch(`http://localhost:8080/api/auth/steam-user/${returnedSteamID}`)
@@ -115,6 +116,8 @@ export default function SignInPanel({ onAuthStateChange }: SignInPanelProps) {
             setTimeout(() => {
               unlockDialogue();
             }, 1000);
+
+            completedLoginFor.current = returnedSteamID;
 
             onAuthStateChange(true);
 
