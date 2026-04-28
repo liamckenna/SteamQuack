@@ -13,12 +13,18 @@ import (
 )
 
 type DiagnosticsResponse struct {
-	TotalPlaytimeMinutes int                   `json:"total_playtime_minutes"`
-	MostPlayedGame       *steam.SteamOwnedGame `json:"most_played_game"`
-	NichestGame          *models.Game          `json:"nichest_game"`        // based on lowest review count among owned games that exist in our db
-	PreferredGameType    string                `json:"preferred_game_type"` // e.g. "Action RPG, Auto Battler, Sandbox with 2D Fighter, 3D Fighter, 4X"
-	GenresBreakdown      map[string]float64    `json:"genres_breakdown"`
-	SubGenresBreakdown   map[string]float64    `json:"sub_genres_breakdown"`
+	TotalPlaytimeMinutes       int                   `json:"total_playtime_minutes"`
+	MostPlayedGame             *steam.SteamOwnedGame `json:"most_played_game"`
+	NichestGame                *models.Game          `json:"nichest_game"`        // based on lowest review count among owned games that exist in our db
+	PreferredGameType          string                `json:"preferred_game_type"` // e.g. "Action RPG, Auto Battler, Sandbox with 2D Fighter, 3D Fighter, 4X"
+	SuperGenresBreakdown       map[string]float64    `json:"super_genres_breakdown"`
+	GenresBreakdown            map[string]float64    `json:"genres_breakdown"`
+	SubGenresBreakdown         map[string]float64    `json:"sub_genres_breakdown"`
+	VisualsViewpointsBreakdown map[string]float64    `json:"visuals_viewpoints_breakdown"`
+	ThemesMoodsBreakdown       map[string]float64    `json:"themes_moods_breakdown"`
+	FeaturesBreakdown          map[string]float64    `json:"features_breakdown"`
+	PlayersBreakdown           map[string]float64    `json:"players_breakdown"`
+	AssessmentsBreakdown       map[string]float64    `json:"assessments_breakdown"`
 }
 
 func DiagnosticsHandler(steamService *steam.ScrapingService) http.HandlerFunc {
@@ -40,8 +46,14 @@ func DiagnosticsHandler(steamService *steam.ScrapingService) http.HandlerFunc {
 		if len(ownedGamesResp.Response.Games) == 0 {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(DiagnosticsResponse{
-				GenresBreakdown:    make(map[string]float64),
-				SubGenresBreakdown: make(map[string]float64),
+				SuperGenresBreakdown:       make(map[string]float64),
+				GenresBreakdown:            make(map[string]float64),
+				SubGenresBreakdown:         make(map[string]float64),
+				VisualsViewpointsBreakdown: make(map[string]float64),
+				ThemesMoodsBreakdown:       make(map[string]float64),
+				FeaturesBreakdown:          make(map[string]float64),
+				PlayersBreakdown:           make(map[string]float64),
+				AssessmentsBreakdown:       make(map[string]float64),
 			})
 			return
 		}
@@ -71,8 +83,17 @@ func DiagnosticsHandler(steamService *steam.ScrapingService) http.HandlerFunc {
 			nichestPtr = &nichestGame
 		}
 
-		genreCounts := make(map[string]int)
-		subGenreCounts := make(map[string]int)
+		categoryCounts := map[string]map[string]int{
+			"super-genre":         make(map[string]int),
+			"genre":               make(map[string]int),
+			"sub-genre":           make(map[string]int),
+			"visuals & viewpoint": make(map[string]int),
+			"themes & moods":      make(map[string]int),
+			"features":            make(map[string]int),
+			"players":             make(map[string]int),
+			"assessments":         make(map[string]int),
+		}
+
 		allPossibleTags := tags.GetAllPossibleTags()
 
 		type GameTagResult struct {
@@ -87,47 +108,49 @@ func DiagnosticsHandler(steamService *steam.ScrapingService) http.HandlerFunc {
 			Where("games.app_id IN ?", ownedAppIDs).
 			Scan(&userGameTags)
 
-		gameGenres := make(map[uint32]map[string]bool)
-		gameSubGenres := make(map[uint32]map[string]bool)
+		gameCategories := make(map[uint32]map[string]map[string]bool)
 
 		for _, gt := range userGameTags {
 			category := allPossibleTags[gt.TagName]
 
-			if category == "genre" {
-				if gameGenres[gt.GameID] == nil {
-					gameGenres[gt.GameID] = make(map[string]bool)
+			if _, exists := categoryCounts[category]; exists {
+				if gameCategories[gt.GameID] == nil {
+					gameCategories[gt.GameID] = make(map[string]map[string]bool)
 				}
-				gameGenres[gt.GameID][gt.TagName] = true
-			} else if category == "sub-genre" {
-				if gameSubGenres[gt.GameID] == nil {
-					gameSubGenres[gt.GameID] = make(map[string]bool)
+				if gameCategories[gt.GameID][category] == nil {
+					gameCategories[gt.GameID][category] = make(map[string]bool)
 				}
-				gameSubGenres[gt.GameID][gt.TagName] = true
+				gameCategories[gt.GameID][category][gt.TagName] = true
 			}
 		}
-		for _, gMap := range gameGenres {
-			for g := range gMap {
-				genreCounts[g]++
-			}
-		}
-		for _, sgMap := range gameSubGenres {
-			for sg := range sgMap {
-				subGenreCounts[sg]++
+
+		for _, categoriesMap := range gameCategories {
+			for category, tagsMap := range categoriesMap {
+				for tagName := range tagsMap {
+					categoryCounts[category][tagName]++
+				}
 			}
 		}
 
 		dbGamesCount := int64(0)
 		db.Model(&models.Game{}).Where("app_id IN ?", ownedAppIDs).Count(&dbGamesCount)
 
-		genresBreakdown := make(map[string]float64)
-		subGenresBreakdown := make(map[string]float64)
+		breakdowns := map[string]map[string]float64{
+			"super-genre":         make(map[string]float64),
+			"genre":               make(map[string]float64),
+			"sub-genre":           make(map[string]float64),
+			"visuals & viewpoint": make(map[string]float64),
+			"themes & moods":      make(map[string]float64),
+			"features":            make(map[string]float64),
+			"players":             make(map[string]float64),
+			"assessments":         make(map[string]float64),
+		}
 
 		if dbGamesCount > 0 {
-			for g, count := range genreCounts {
-				genresBreakdown[g] = (float64(count) / float64(dbGamesCount)) * 100
-			}
-			for sg, count := range subGenreCounts {
-				subGenresBreakdown[sg] = (float64(count) / float64(dbGamesCount)) * 100
+			for cat, counts := range categoryCounts {
+				for tagName, count := range counts {
+					breakdowns[cat][tagName] = (float64(count) / float64(dbGamesCount)) * 100
+				}
 			}
 		}
 
@@ -137,7 +160,7 @@ func DiagnosticsHandler(steamService *steam.ScrapingService) http.HandlerFunc {
 		}
 
 		var sortedGenres []TagCount
-		for g, count := range genreCounts {
+		for g, count := range categoryCounts["genre"] {
 			sortedGenres = append(sortedGenres, TagCount{g, count})
 		}
 		sort.Slice(sortedGenres, func(i, j int) bool {
@@ -145,7 +168,7 @@ func DiagnosticsHandler(steamService *steam.ScrapingService) http.HandlerFunc {
 		})
 
 		var sortedSubGenres []TagCount
-		for sg, count := range subGenreCounts {
+		for sg, count := range categoryCounts["sub-genre"] {
 			sortedSubGenres = append(sortedSubGenres, TagCount{sg, count})
 		}
 		sort.Slice(sortedSubGenres, func(i, j int) bool {
@@ -175,12 +198,18 @@ func DiagnosticsHandler(steamService *steam.ScrapingService) http.HandlerFunc {
 		preferredGameType = preferredGameType + " gameplay"
 
 		response := DiagnosticsResponse{
-			TotalPlaytimeMinutes: totalPlaytime,
-			MostPlayedGame:       mostPlayed,
-			NichestGame:          nichestPtr,
-			PreferredGameType:    preferredGameType,
-			GenresBreakdown:      genresBreakdown,
-			SubGenresBreakdown:   subGenresBreakdown,
+			TotalPlaytimeMinutes:       totalPlaytime,
+			MostPlayedGame:             mostPlayed,
+			NichestGame:                nichestPtr,
+			PreferredGameType:          preferredGameType,
+			SuperGenresBreakdown:       breakdowns["super-genre"],
+			GenresBreakdown:            breakdowns["genre"],
+			SubGenresBreakdown:         breakdowns["sub-genre"],
+			VisualsViewpointsBreakdown: breakdowns["visuals & viewpoint"],
+			ThemesMoodsBreakdown:       breakdowns["themes & moods"],
+			FeaturesBreakdown:          breakdowns["features"],
+			PlayersBreakdown:           breakdowns["players"],
+			AssessmentsBreakdown:       breakdowns["assessments"],
 		}
 
 		w.Header().Set("Content-Type", "application/json")

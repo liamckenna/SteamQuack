@@ -9,5 +9,8 @@
     "lint": "cd frontend && npm run lint",
     "preview": "cd frontend && npm run preview",
     "postinstall": "cd frontend && npm install"
+  },
+  "dependencies": {
+    "recharts": "^3.8.1"
   }
 }
