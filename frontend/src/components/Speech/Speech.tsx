@@ -84,7 +84,7 @@ export default function Speech() {
           {parseFormattedText(currentLine)}
         </p>
         {isLastLine ? (
-          <span className="speech__continue speech__continue--last">✓</span>
+          <span className="speech__continue speech__continue--last"></span>
         ) : (
           <span className="speech__continue">▼</span>
         )}
