@@ -258,10 +258,11 @@ func GetSteamAuthUserHandler(steamService *steam.ScrapingService) http.HandlerFu
 		}
 
 		response := map[string]interface{}{
-			"user": map[string]string{
+			"user": map[string]interface{}{
 				"steam_id":     playerSummary.SteamID,
 				"persona_name": playerSummary.PersonaName,
 				"avatar":       playerSummary.AvatarFull,
+				"public":       playerSummary.Visibility == 3,
 			},
 		}
 

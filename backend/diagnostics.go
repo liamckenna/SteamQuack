@@ -60,6 +60,8 @@ func DiagnosticsHandler(steamService *steam.ScrapingService) http.HandlerFunc {
 
 		totalPlaytime := 0
 		var mostPlayed *steam.SteamOwnedGame
+		var nichest *steam.SteamOwnedGame
+		var recentlyPlayed []*steam.SteamOwnedGame
 
 		// gets user's total playtime
 		ownedAppIDs := make([]uint32, 0, len(ownedGamesResp.Response.Games))
@@ -78,9 +80,24 @@ func DiagnosticsHandler(steamService *steam.ScrapingService) http.HandlerFunc {
 		// find the nichest game (lowest review count) from user's owned games
 		var nichestGame models.Game
 		result := db.Where("app_id IN ?", ownedAppIDs).Order("review_count ASC").First(&nichestGame)
-		var nichestPtr *models.Game
-		if result.Error == nil {
-			nichestPtr = &nichestGame
+		if result.Error != nil {
+			http.Error(w, "Database error", http.StatusInternalServerError)
+			return
+		}
+		for i := range ownedGamesResp.Response.Games {
+			game := &ownedGamesResp.Response.Games[i]
+			if game.AppID == nichestGame.AppID {
+				nichest = game
+				break
+			}
+		}
+
+		// gets user's recently played games
+		for i := range ownedGamesResp.Response.Games {
+			game := &ownedGamesResp.Response.Games[i]
+			if game.Playtime2Weeks > 0 {
+				recentlyPlayed = append(recentlyPlayed, game)
+			}
 		}
 
 		categoryCounts := map[string]map[string]int{

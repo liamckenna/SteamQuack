@@ -4,6 +4,7 @@
   width: 100vw;
   height: 100vh;
   text-align: center;
+  background-color: var(--color-bg-tertiary);
 }
 
 html,
@@ -34,27 +35,22 @@ body {
 
 .left-column {
   width: 25%;
-  background-color: red;
 }
 
 .middle-column {
   width: 50%;
-  background-color: blue;
 }
 
 .right-column {
   width: 25%;
-  background-color: green;
 }
 
 .top-row {
   height: 27.5%;
-  background-color: rgba(0, 0, 0, 0.25);
 }
 
 .top-left-row {
   height: 40%;
-  background-color: rgba(0, 0, 0, 0.25);
 }
 
 .bottom-left-row {
@@ -63,7 +59,6 @@ body {
 
 .top-middle-row {
   height: 27.5%;
-  background-color: rgba(0, 0, 0, 0.25);
 }
 
 .bottom-middle-row {

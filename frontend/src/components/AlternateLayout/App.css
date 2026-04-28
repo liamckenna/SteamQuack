@@ -1,0 +1,70 @@
+#root {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  text-align: center;
+  background-color: rgb(75, 74, 88);
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.screen-container {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+}
+
+.content-container {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.left-column {
+  width: 30%;
+}
+
+.middle-column {
+  width: 40%;
+}
+
+.right-column {
+  width: 30%;
+}
+
+.top-row {
+  height: 20%;
+}
+
+.top-left-row {
+  height: 50%;
+}
+
+.bottom-left-row {
+  height: 50%;
+}
+
+.top-middle-row {
+  height: 27.5%;
+}
+
+.bottom-middle-row {
+  height: 72.5%;
+}
+
+.bottom-row {
+  height: 80%;
+}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import "./UserIcon.css";
 import DefaultIcon from "../../assets/images/steam_default.png";
+import ProfileFrame from "../../assets/images/Profile-Frame.png";
 
 type SteamAuthUserResponse = {
   user: {
@@ -14,24 +15,36 @@ export default function UserIcon() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const returnedSteamID = params.get("steamid");
+    function loadAvatar() {
+      const params = new URLSearchParams(window.location.search);
+      const returnedSteamID = params.get("steamid");
 
-    if (!returnedSteamID) return;
+      if (!returnedSteamID) {
+        setAvatarUrl(null);
+        return;
+      }
 
-    fetch(`http://localhost:8080/api/auth/steam-user/${returnedSteamID}`)
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error("Failed to fetch Steam auth user");
-        }
-        return res.json() as Promise<SteamAuthUserResponse>;
-      })
-      .then((data) => {
-        setAvatarUrl(data.user.avatar);
-      })
-      .catch((err) => {
-        console.error("Failed to load Steam avatar:", err);
-      });
+      fetch(`http://localhost:8080/api/auth/steam-user/${returnedSteamID}`)
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error("Failed to fetch Steam auth user");
+          }
+          return res.json() as Promise<SteamAuthUserResponse>;
+        })
+        .then((data) => {
+          setAvatarUrl(data.user.avatar);
+        })
+        .catch((err) => {
+          console.error("Failed to load Steam avatar:", err);
+        });
+    }
+
+    loadAvatar();
+    window.addEventListener("steamid-changed", loadAvatar);
+
+    return () => {
+      window.removeEventListener("steamid-changed", loadAvatar);
+    };
   }, []);
 
   return (
@@ -39,6 +52,12 @@ export default function UserIcon() {
       <img
         src={avatarUrl ?? DefaultIcon}
         alt={avatarUrl ? "Steam User Icon" : "Default User Icon"}
+        className="avatar"
+      />
+      <img
+        src={ProfileFrame}
+        alt="Profile Frame"
+        className="frame"
       />
     </div>
   );

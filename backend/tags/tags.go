@@ -91,7 +91,7 @@ func GetAllTagCategories() []string {
 func GetTagCategoryWeights() map[string]float64 {
 	return map[string]float64{
 		"super-genre":         0.125,
-		"genre":               0.75,
+		"genre":               0.5,
 		"sub-genre":           1.0,
 		"visuals & viewpoint": 0.5,
 		"themes & moods":      0.5,
