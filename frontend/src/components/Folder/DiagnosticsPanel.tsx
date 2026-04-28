@@ -108,13 +108,13 @@ export default function DiagnosticsPanel() {
 
         {/* Recently Played Section */}
         <h2 className="diagnostics-panel__heading">Recently Played (2 Weeks)</h2>
-        {data.recently_played.length == 0 && (
+        {(!data.recently_played || data.recently_played.length === 0) && (
           <p>No recently played games.</p>
         )}
-        {data.recently_played.length > 0 && (
+        {data.recently_played && data.recently_played.length > 0 && (
           <div className="diagnostics-panel__recently-played">
-            {data.recently_played.map((game) => (
-              <figure>
+            {data.recently_played.map((game, idx) => (
+              <figure key={game.appid || idx}>
                 <img src={`https://steamcdn-a.akamaihd.net/steam/apps/${game.appid}/header.jpg`}/>
                 <figcaption>{game.name}</figcaption>
                 <figcaption>({minutesToHours(game.playtime_2weeks)} hrs)</figcaption>
@@ -153,7 +153,7 @@ export default function DiagnosticsPanel() {
                     dataKey="value"
                     stroke="none"
                   >
-                    {genreData.map((entry, index) => (
+                    {genreData.map((_entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
@@ -182,7 +182,7 @@ export default function DiagnosticsPanel() {
                     dataKey="value"
                     stroke="none"
                   >
-                    {subGenreData.map((entry, index) => (
+                    {subGenreData.map((_entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>

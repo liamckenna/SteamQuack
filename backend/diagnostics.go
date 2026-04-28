@@ -13,18 +13,19 @@ import (
 )
 
 type DiagnosticsResponse struct {
-	TotalPlaytimeMinutes       int                   `json:"total_playtime_minutes"`
-	MostPlayedGame             *steam.SteamOwnedGame `json:"most_played_game"`
-	NichestGame                *models.Game          `json:"nichest_game"`        // based on lowest review count among owned games that exist in our db
-	PreferredGameType          string                `json:"preferred_game_type"` // e.g. "Action RPG, Auto Battler, Sandbox with 2D Fighter, 3D Fighter, 4X"
-	SuperGenresBreakdown       map[string]float64    `json:"super_genres_breakdown"`
-	GenresBreakdown            map[string]float64    `json:"genres_breakdown"`
-	SubGenresBreakdown         map[string]float64    `json:"sub_genres_breakdown"`
-	VisualsViewpointsBreakdown map[string]float64    `json:"visuals_viewpoints_breakdown"`
-	ThemesMoodsBreakdown       map[string]float64    `json:"themes_moods_breakdown"`
-	FeaturesBreakdown          map[string]float64    `json:"features_breakdown"`
-	PlayersBreakdown           map[string]float64    `json:"players_breakdown"`
-	AssessmentsBreakdown       map[string]float64    `json:"assessments_breakdown"`
+	TotalPlaytimeMinutes       int                     `json:"total_playtime_minutes"`
+	MostPlayedGame             *steam.SteamOwnedGame   `json:"most_played_game"`
+	NichestGame                *models.Game            `json:"nichest_game"` // based on lowest review count among owned games that exist in our db
+	RecentlyPlayed             []*steam.SteamOwnedGame `json:"recently_played"`
+	PreferredGameType          string                  `json:"preferred_game_type"` // e.g. "Action RPG, Auto Battler, Sandbox with 2D Fighter, 3D Fighter, 4X"
+	SuperGenresBreakdown       map[string]float64      `json:"super_genres_breakdown"`
+	GenresBreakdown            map[string]float64      `json:"genres_breakdown"`
+	SubGenresBreakdown         map[string]float64      `json:"sub_genres_breakdown"`
+	VisualsViewpointsBreakdown map[string]float64      `json:"visuals_viewpoints_breakdown"`
+	ThemesMoodsBreakdown       map[string]float64      `json:"themes_moods_breakdown"`
+	FeaturesBreakdown          map[string]float64      `json:"features_breakdown"`
+	PlayersBreakdown           map[string]float64      `json:"players_breakdown"`
+	AssessmentsBreakdown       map[string]float64      `json:"assessments_breakdown"`
 }
 
 func DiagnosticsHandler(steamService *steam.ScrapingService) http.HandlerFunc {
@@ -46,6 +47,7 @@ func DiagnosticsHandler(steamService *steam.ScrapingService) http.HandlerFunc {
 		if len(ownedGamesResp.Response.Games) == 0 {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(DiagnosticsResponse{
+				RecentlyPlayed:             make([]*steam.SteamOwnedGame, 0),
 				SuperGenresBreakdown:       make(map[string]float64),
 				GenresBreakdown:            make(map[string]float64),
 				SubGenresBreakdown:         make(map[string]float64),
@@ -210,6 +212,7 @@ func DiagnosticsHandler(steamService *steam.ScrapingService) http.HandlerFunc {
 			TotalPlaytimeMinutes:       totalPlaytime,
 			MostPlayedGame:             mostPlayed,
 			NichestGame:                nichestPtr,
+			RecentlyPlayed:             recentlyPlayed,
 			PreferredGameType:          preferredGameType,
 			SuperGenresBreakdown:       breakdowns["super-genre"],
 			GenresBreakdown:            breakdowns["genre"],
