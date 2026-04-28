@@ -3,6 +3,7 @@
   flex-direction: column;
   gap: 16px;
   min-height: 0;
+  margin: 0 auto
 }
 
 .prescription-panel__detail {
@@ -79,18 +80,20 @@
 .prescription-panel__grid {
   flex: 1;
   display: grid;
-  grid-template-columns: repeat(3, minmax(140px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  align-self: center;
   align-content: start;
   overflow: auto;
-  padding: 4px 0;
+  padding: 16px 120px;
 }
 
 .prescription-panel__card {
   display: flex;
   flex-direction: column;
-  align-items: stretch;
-  padding: 10;
+  align-items: center;
+  padding: 12px;
   border: none;
   border-radius: 8px;
   background: transparent;
@@ -103,9 +106,10 @@
   transform: translateY(-2px);
 }
 
-.prescription-panel__card--selected {
-  outline: 2px solid #64748b;
-  outline-offset: 2px;
+.prescription-panel__card:focus {
+  outline: 0px solid #64748b;
+  outline-offset: 0px;
+  background-color: lightgray;
 }
 
 .prescription-panel__card-cover {
@@ -158,4 +162,5 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  width: 100%;
 }

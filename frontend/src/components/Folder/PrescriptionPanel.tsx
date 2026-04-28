@@ -58,9 +58,7 @@ export const GameTile = ({ game }: GameTileProps) => {
         )}
         <img src={imageUrl} />
       </div>
-      <div className="prescription-panel__card-title">
-        <p>{game.name}</p>
-      </div>
+      <p className="prescription-panel__card-title">{game.name}</p>
     </button>
   );
 };
@@ -95,7 +93,7 @@ export default function PrescriptionPanel({
   const { startDialogue } = useDialogue();
   const hasInitialized = useRef(false);
 
-  if (!userID) return <div>Please sign in first.</div>;
+  if (!userID) return <div className="prescription-panel">Please sign in first.</div>;
 
   useEffect(() => {
     if (hasInitialized.current) return;
@@ -152,9 +150,9 @@ export default function PrescriptionPanel({
     }
   }, [userID, preferences]);
 
-  if (isLoading) return <div>Loading your recommendations...</div>;
-  if (error) return <div>{error}</div>;
-  if (recommendations.length === 0) return <div>No recommendations found.</div>;
+  if (isLoading) return <div className="prescription-panel">Loading your recommendations...</div>;
+  if (error) return <div className="prescription-panel">{error}</div>;
+  if (recommendations.length === 0) return <div className="prescription-panel">No recommendations found.</div>;
 
   return (
     <div className="prescription-panel">
@@ -162,6 +160,11 @@ export default function PrescriptionPanel({
         {recommendations.map((game) => (
           <GameTile key={game.game_id} game={game} />
         ))}
+      </div>
+      <div>
+        <button>
+          <span>TEST</span>
+        </button>
       </div>
     </div>
   );
