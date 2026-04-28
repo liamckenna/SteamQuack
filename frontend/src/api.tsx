@@ -61,6 +61,7 @@ export type DiagnosticsResponse = {
   most_played_game: OwnedGame;
   nichest_game: OwnedGame;
   recently_played: OwnedGame[];
+  preferred_game_type: string;
   genres_breakdown: Record<string, number>;
   sub_genres_breakdown: Record<string, number>;
 };

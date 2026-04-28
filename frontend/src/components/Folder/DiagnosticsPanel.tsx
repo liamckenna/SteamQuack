@@ -30,12 +30,6 @@ const processChartData = (data: Record<string, number>, threshold = 5) => {
   return processed.sort((a, b) => b.value - a.value);
 };
 
-const getTopItem = (data: Record<string, number>) => {
-  const entries = Object.entries(data);
-  if (entries.length === 0) return "Unknown";
-  return entries.reduce((a, b) => (a[1] > b[1] ? a : b))[0];
-};
-
 // --- Colors ---
 const COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#6366f1', '#a855f7', '#f43f5e', '#14b8a6'];
 
@@ -78,9 +72,6 @@ export default function DiagnosticsPanel() {
   const genreData = processChartData(data.genres_breakdown);
   const subGenreData = processChartData(data.sub_genres_breakdown);
   
-  const topGenre = getTopItem(data.genres_breakdown);
-  const topSubGenre = getTopItem(data.sub_genres_breakdown);
-
   return (
     <div className="diagnostics-panel">
       
@@ -127,7 +118,7 @@ export default function DiagnosticsPanel() {
         <div className="diagnostics-panel__dream-game">
           <h3 className="diagnostics-panel__dream-title">Your Dream Game</h3>
           <p className="diagnostics-panel__dream-desc">
-            Based on your habits, you'd love a <strong>{topGenre}</strong> <strong>{topSubGenre}</strong>.
+            Based on your habits, you'd love a <strong>{data.preferred_game_type || "Unknown"}</strong>.
           </p>
         </div>
       </section>
