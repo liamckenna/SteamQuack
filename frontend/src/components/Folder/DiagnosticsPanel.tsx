@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from 'react';
 import { getDiagnostics, type DiagnosticsResponse } from "../../api";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, type RenderableText, type TooltipValueType } from 'recharts';
 import { useDialogue } from "../../context/DialogueContext";
+import FolderPager from './FolderPager';
 
 
 // --- Helper Functions ---
@@ -81,9 +82,8 @@ export default function DiagnosticsPanel() {
   const topGenre = getTopItem(data.genres_breakdown);
   const topSubGenre = getTopItem(data.sub_genres_breakdown);
 
-  return (
-    <div className="diagnostics-panel">
-      
+  const page1 =
+    <>
       {/* Statistics Section */}
       <section className="diagnostics-panel__section">
         <h2 className="diagnostics-panel__heading">Player Statistics</h2>
@@ -131,7 +131,10 @@ export default function DiagnosticsPanel() {
           </p>
         </div>
       </section>
+    </>
 
+  const page2 =
+    <>
       {/* Charts Section */}
       <section className="diagnostics-panel__section">
         <h2 className="diagnostics-panel__heading">Library Breakdown</h2>
@@ -153,7 +156,7 @@ export default function DiagnosticsPanel() {
                     dataKey="value"
                     stroke="none"
                   >
-                    {genreData.map((entry, index) => (
+                    {genreData.map((_entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
@@ -182,7 +185,7 @@ export default function DiagnosticsPanel() {
                     dataKey="value"
                     stroke="none"
                   >
-                    {subGenreData.map((entry, index) => (
+                    {subGenreData.map((_entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
@@ -197,7 +200,11 @@ export default function DiagnosticsPanel() {
 
         </div>
       </section>
+    </>
 
+  return (
+    <div className="diagnostics-panel">
+      <FolderPager pages={[page1, page2]} />
     </div>
   );
 };

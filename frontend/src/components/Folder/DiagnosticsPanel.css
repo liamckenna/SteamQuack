@@ -3,12 +3,14 @@
 }
 
 .diagnostics-panel {
-  max-width: 660px;
   margin: 0 auto;
-  padding: 8px 0;
+  width: 100%
 }
 
 .diagnostics-panel__section {
+  align-self: center;
+  max-width: 660px;
+  margin-top: 28px;
   margin-bottom: 28px;
 }
 

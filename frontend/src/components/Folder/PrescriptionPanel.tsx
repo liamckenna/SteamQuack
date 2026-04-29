@@ -2,6 +2,7 @@ import "./PrescriptionPanel.css";
 import { useState, useEffect, useRef } from "react";
 import { getRecommendations, type Recommendation } from "../../api";
 import { useDialogue } from "../../context/DialogueContext";
+import FolderPager from "./FolderPager";
 
 interface GameTileProps {
   game: Recommendation;
@@ -154,18 +155,23 @@ export default function PrescriptionPanel({
   if (error) return <div className="prescription-panel">{error}</div>;
   if (recommendations.length === 0) return <div className="prescription-panel">No recommendations found.</div>;
 
-  return (
-    <div className="prescription-panel">
+  const pages = [];
+  const recs = [...recommendations];
+
+  while (recs.length > 0) {
+    const pageRecs = recs.splice(0, 9);
+    pages.push(
       <div className="prescription-panel__grid">
-        {recommendations.map((game) => (
+        {pageRecs.map((game) => (
           <GameTile key={game.game_id} game={game} />
         ))}
       </div>
-      <div>
-        <button>
-          <span>TEST</span>
-        </button>
-      </div>
+    );
+  }
+
+  return (
+    <div className="prescription-panel">
+      <FolderPager pages={pages} />
     </div>
   );
 }
