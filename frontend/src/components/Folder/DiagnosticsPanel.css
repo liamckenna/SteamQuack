@@ -50,12 +50,15 @@
 
 .diagnostics-panel__recently-played {
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
+  width: 100%;
+  flex-wrap: nowrap;
 }
 
 .diagnostics-panel__recently-played img {
   width: 100%;
   height: auto;
+  max-width: 140px;
 }
 
 .diagnostics-panel__dream-game {

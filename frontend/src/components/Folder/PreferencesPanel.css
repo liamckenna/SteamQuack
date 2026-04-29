@@ -1,30 +1,33 @@
 .preferences-panel {
   max-width: 640px;
   margin: 0 auto;
-  padding: 8px 0;
+  padding: 2px 0;
+  /* Shrink the whole panel if it gets too tall */
+  transform-origin: top center;
+  zoom: 0.9;
 }
 
 .preferences-panel__section {
-  margin-bottom: 24px;
+  margin-bottom: 10px;
 }
 
 .preferences-panel__heading {
-  margin: 0 0 14px;
-  font-size: 1rem;
+  margin: 0 0 6px;
+  font-size: 0.9rem;
   font-weight: 600;
 }
 
 .preferences-panel__sliders {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 6px;
 }
 
 .preferences-panel__row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .preferences-panel__label {
@@ -68,7 +71,7 @@
 .preferences-panel__two-col {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 12px;
 }
 
 @media (max-width: 600px) {
@@ -80,7 +83,7 @@
 .preferences-panel__field {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .preferences-panel__input-wrap {
@@ -103,19 +106,19 @@
 
 .preferences-panel__search-icon {
   position: absolute;
-  right: 12px;
-  font-size: 1rem;
+  right: 10px;
+  font-size: 0.9rem;
   opacity: 0.6;
   pointer-events: none;
 }
 
 .preferences-panel__game-list {
-  margin: 8px 0 0;
+  margin: 4px 0 0;
   padding: 0;
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .preferences-panel__game-item label {
@@ -127,8 +130,8 @@
 }
 
 .preferences-panel__game-item input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
 }
 
 .preferences-panel__no-results {
@@ -142,7 +145,7 @@
   top: 100%;
   left: 0;
   right: 0;
-  max-height: 200px;
+  max-height: 120px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -154,6 +157,15 @@
   margin-top: 4px;
   z-index: 10;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.preferences-panel__tag-list-static {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 2px;
+  max-height: 120px;
+  overflow-y: auto;
 }
 
 .preferences-panel__tag-checkbox {
