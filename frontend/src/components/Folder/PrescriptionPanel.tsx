@@ -39,8 +39,8 @@ export const GameTile = ({ game }: GameTileProps) => {
             "Price": game.current_price > 0 ? `$${game.current_price.toFixed(2)}` : "Free",
             "Discount": discountPercent,
           });
-        } else {
-          startDialogue("readGameDescription", {
+        } else if (game.review_percentage >= 90) {
+          startDialogue("readGameDescriptionHighReviewScore", {
             "GameName": game.name,
             "ReviewScore": game.review_percentage.toFixed(0),
             "ReviewCount": game.review_count,
@@ -48,7 +48,25 @@ export const GameTile = ({ game }: GameTileProps) => {
             "ReleaseDate": new Date(game.release_date_unix * 1000).toLocaleDateString(),
             "Price": game.current_price > 0 ? `$${game.current_price.toFixed(2)}` : "Free",
           });
-        }
+        } else if (game.review_percentage <= 50) {
+          startDialogue("readGameDescriptionLowReviewScore", {
+            "GameName": game.name,
+            "ReviewScore": game.review_percentage.toFixed(0),
+            "ReviewCount": game.review_count,
+            "GameDescription": game.description || "I don't have a description for this one!",
+            "ReleaseDate": new Date(game.release_date_unix * 1000).toLocaleDateString(),
+            "Price": game.current_price > 0 ? `$${game.current_price.toFixed(2)}` : "Free",
+          });
+        } else {
+          startDialogue("readGameDescription", {
+          "GameName": game.name,
+          "ReviewScore": game.review_percentage.toFixed(0),
+          "ReviewCount": game.review_count,
+          "GameDescription": game.description || "I don't have a description for this one!",
+          "ReleaseDate": new Date(game.release_date_unix * 1000).toLocaleDateString(),
+          "Price": game.current_price > 0 ? `$${game.current_price.toFixed(2)}` : "Free",
+        });
+}
       }}
     >
       <div className="prescription-panel__card-cover">

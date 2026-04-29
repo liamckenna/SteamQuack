@@ -33,11 +33,26 @@ const dialogues: Record<string, DialogueVariant[]> = {
             next: "pleaseFillOutForm",
             face: "normal",
         },
+        {
+            lines: [
+                "plees, make urself at home.",
+                "my name is Ducktor Gamez. i herd your experiensing some simptoms of bordum.",
+                "its truley unforchunate, but no need to worrey. yuve come to the rite plase.",
+            ],
+            next: "pleaseFillOutForm",
+            face: "normal",
+        },
     ],
     pleaseFillOutForm: [
         {
             lines: [
                 "pleese fill out the form so i can evalue ate your case.",
+            ],
+            face: "happy",
+        },
+        {
+            lines: [
+                "pleese sign in at the front desk so i can evalue ate your case.",
             ],
             face: "happy",
         },
@@ -57,6 +72,12 @@ const dialogues: Record<string, DialogueVariant[]> = {
             ],
             face: "closed",
         },
+        {
+            lines: [
+                "giv me a moment to chek my reckords.",
+            ],
+            face: "closed",
+        },
     ],
     signInSuccess: [
         {
@@ -66,7 +87,7 @@ const dialogues: Record<string, DialogueVariant[]> = {
             face: "happy",
             next: "signInSuccess2",
             repeatable: false,
-        }
+        },
     ],
     signInSuccess2: [
         {
@@ -74,7 +95,13 @@ const dialogues: Record<string, DialogueVariant[]> = {
                 "follow me to the egsam room so we can look at youre charts.",
             ],
             face: "normal",
-        }
+        },
+        {
+            lines: [
+                "come with me to the other room so we can e value ate youre charts.",
+            ],
+            face: "happy",
+        },
     ],
     signInPrivate: [
         {
@@ -102,19 +129,32 @@ const dialogues: Record<string, DialogueVariant[]> = {
                 "pleese check youre steam url and try again.",
             ],
             face: "sad",
-        }
+        },
+        {
+            lines: [
+                "im terriblee sorrey, but i couldnt find your steam profile in our sistem.",
+                "pleese check youre steam url and try again.",
+            ],
+            face: "sad",
+        },
     ],
     signOutSuccess: [
         {
             lines: [
                 "hav some one else that needs a diag noses? try there profial.",
             ],
+        },
+        {
+            lines: [
+                "come again!",
+            ],
+            face: "happy",
         }
     ],
     openDiagnostics: [
         {
             lines: [
-                "i ran sum tests, lets take a luk at youre vitals.",
+                "i ran sum tests, lets take a look at youre vitalz.",
             ],
             repeatable: false,
         }
@@ -231,17 +271,30 @@ const dialogues: Record<string, DialogueVariant[]> = {
     openPrescription: [
         {
             lines: [
-                "giv me a moment to determin youre treat ment plan.",
+                "giv me a moment to determin youre treat ment plan...",
+            ],
+        },
+        {
+            lines: [
+                "let me re view my notez...",
             ],
         }
     ],
     generalPrescription: [
         {
             lines: [
-                "after looking at your charts, i hav come too the conclushun that you are in need of a new game!",
-                "hear are sum i think you mite injoy!",
+                "after looking at your chartz, i hav come too the conclushun that you are in need of a new game!",
+                "hear are sum i think you mite injoy.",
                 "click them onse for mor detales, click twise to go to the store page!",
             ],
+        },
+        {
+            lines: [
+                "it seems that you are in need of a new game!",
+                "hear are a few i hav in mind for you.",
+                "click them onse for mor detales, click twise to go to the store page!",
+            ],
+            face: "closed",
         }
     ],
     noResults: [
@@ -251,6 +304,13 @@ const dialogues: Record<string, DialogueVariant[]> = {
                 "try adjusting youre filters and ill take a nuther look.",
             ],
             face: "sad",
+        },
+        {
+            lines: [
+                "hmm, im strugle ing to find sumthing that meets youre preferenses.",
+                "try adjusting youre filters and ill take a nuther look.",
+            ],
+            face: "shocked",
         }
     ],
     readGameDescription: [
@@ -258,6 +318,51 @@ const dialogues: Record<string, DialogueVariant[]> = {
             lines: [
                 "**[GameName]**: \"[GameDescription]\"",
                 "it has a **[ReviewScore]%** from **[ReviewCount]** steam reviews and was released on **[ReleaseDate]**.",
+            ],
+            face: "normal",
+            next: "readGamePrice",
+        }
+    ],
+    readGameDescriptionHighReviewScore: [
+        {
+            lines: [
+                "**[GameName]**: \"[GameDescription]\"",
+            ],
+            face: "normal",
+            next: "readGameDescriptionHighReviewScore2",
+        }
+    ],
+    readGameDescriptionHighReviewScore2: [
+        {
+            lines: [
+                "it scored an impressive **[ReviewScore]%** from **[ReviewCount]** steam reviews and was released on **[ReleaseDate]**.",
+            ],
+            face: "happy",
+            next: "readGamePrice",
+        }
+    ],
+    readGameDescriptionLowReviewScore: [
+        {
+            lines: [
+                "**[GameName]**: \"[GameDescription]\"",
+            ],
+            face: "normal",
+            next: "readGameDescriptionLowReviewScore2",
+        }
+    ],
+    readGameDescriptionLowReviewScore2: [
+        {
+            lines: [
+                "oh... it scored a flattering **[ReviewScore]%** from **[ReviewCount]** steam reviews.",
+                "have fun with that one i guess.",
+            ],
+            face: "shocked",
+            next: "readGamePrice",
+        }
+    ],
+    readGamePrice: [
+        {
+            lines: [
                 "current lee, you can purchase [GameName] for **[Price]**.",
             ],
             face: "normal",
@@ -268,7 +373,7 @@ const dialogues: Record<string, DialogueVariant[]> = {
             lines: [
                 "**[GameName]**: \"[GameDescription]\"",
                 "it has a **[ReviewScore]%** from **[ReviewCount]** steam reviews and was released on **[ReleaseDate]**.",
-                "currently its on sale for **[Price]**, a **[Discount]%** discount!",
+                "its currently on sale for **[Price]**, a **[Discount]%** dis count!",
             ],
             face: "normal",
         }
