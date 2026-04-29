@@ -2,6 +2,7 @@ import "./PrescriptionPanel.css";
 import { useState, useEffect, useRef } from "react";
 import { getRecommendations, type Recommendation } from "../../api";
 import { useDialogue } from "../../context/DialogueContext";
+import FolderPager from "./FolderPager";
 
 interface GameTileProps {
   game: Recommendation;
@@ -58,9 +59,7 @@ export const GameTile = ({ game }: GameTileProps) => {
         )}
         <img src={imageUrl} />
       </div>
-      <div className="prescription-panel__card-title">
-        <p>{game.name}</p>
-      </div>
+      <p className="prescription-panel__card-title">{game.name}</p>
     </button>
   );
 };
@@ -95,7 +94,7 @@ export default function PrescriptionPanel({
   const { startDialogue } = useDialogue();
   const hasInitialized = useRef(false);
 
-  if (!userID) return <div>Please sign in first.</div>;
+  if (!userID) return <div className="prescription-panel">Please sign in first.</div>;
 
   useEffect(() => {
     if (hasInitialized.current) return;
@@ -152,17 +151,27 @@ export default function PrescriptionPanel({
     }
   }, [userID, preferences]);
 
-  if (isLoading) return <div>Loading your recommendations...</div>;
-  if (error) return <div>{error}</div>;
-  if (recommendations.length === 0) return <div>No recommendations found.</div>;
+  if (isLoading) return <div className="prescription-panel">Loading your recommendations...</div>;
+  if (error) return <div className="prescription-panel">{error}</div>;
+  if (recommendations.length === 0) return <div className="prescription-panel">No recommendations found.</div>;
 
-  return (
-    <div className="prescription-panel">
+  const pages = [];
+  const recs = [...recommendations];
+
+  while (recs.length > 0) {
+    const pageRecs = recs.splice(0, 9);
+    pages.push(
       <div className="prescription-panel__grid">
-        {recommendations.map((game) => (
+        {pageRecs.map((game) => (
           <GameTile key={game.game_id} game={game} />
         ))}
       </div>
+    );
+  }
+
+  return (
+    <div className="prescription-panel">
+      <FolderPager pages={pages} />
     </div>
   );
 }

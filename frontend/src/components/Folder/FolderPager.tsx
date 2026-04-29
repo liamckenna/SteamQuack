@@ -1,6 +1,6 @@
-import { ReactNode, useState } from "react";
+import { useState, type ReactNode } from "react";
 import "./FolderPager.css";
-import nextArrow from "../../assets/images/Corner-Right.png"; 
+import nextArrow from "../../assets/images/Corner-Right.png";
 import prevArrow from "../../assets/images/Corner-Left.png";
 
 type FolderPagerProps = {

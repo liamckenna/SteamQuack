@@ -15,7 +15,7 @@ import (
 type DiagnosticsResponse struct {
 	TotalPlaytimeMinutes       int                     `json:"total_playtime_minutes"`
 	MostPlayedGame             *steam.SteamOwnedGame   `json:"most_played_game"`
-	NichestGame                *models.Game            `json:"nichest_game"` // based on lowest review count among owned games that exist in our db
+	NichestGame                *steam.SteamOwnedGame   `json:"nichest_game"` // based on lowest review count among owned games that exist in our db
 	RecentlyPlayed             []*steam.SteamOwnedGame `json:"recently_played"`
 	PreferredGameType          string                  `json:"preferred_game_type"` // e.g. "Action RPG, Auto Battler, Sandbox with 2D Fighter, 3D Fighter, 4X"
 	SuperGenresBreakdown       map[string]float64      `json:"super_genres_breakdown"`
@@ -62,7 +62,7 @@ func DiagnosticsHandler(steamService *steam.ScrapingService) http.HandlerFunc {
 
 		totalPlaytime := 0
 		var mostPlayed *steam.SteamOwnedGame
-		var nichestPtr *models.Game
+		var nichest *steam.SteamOwnedGame
 		var recentlyPlayed []*steam.SteamOwnedGame
 
 		// gets user's total playtime
@@ -82,8 +82,16 @@ func DiagnosticsHandler(steamService *steam.ScrapingService) http.HandlerFunc {
 		// find the nichest game (lowest review count) from user's owned games
 		var nichestGame models.Game
 		result := db.Where("app_id IN ?", ownedAppIDs).Order("review_count ASC").First(&nichestGame)
-		if result.Error == nil {
-			nichestPtr = &nichestGame
+		if result.Error != nil {
+			http.Error(w, "Database error", http.StatusInternalServerError)
+			return
+		}
+		for i := range ownedGamesResp.Response.Games {
+			game := &ownedGamesResp.Response.Games[i]
+			if game.AppID == nichestGame.AppID {
+				nichest = game
+				break
+			}
 		}
 
 		// gets user's recently played games
@@ -211,7 +219,7 @@ func DiagnosticsHandler(steamService *steam.ScrapingService) http.HandlerFunc {
 		response := DiagnosticsResponse{
 			TotalPlaytimeMinutes:       totalPlaytime,
 			MostPlayedGame:             mostPlayed,
-			NichestGame:                nichestPtr,
+			NichestGame:                nichest,
 			RecentlyPlayed:             recentlyPlayed,
 			PreferredGameType:          preferredGameType,
 			SuperGenresBreakdown:       breakdowns["super-genre"],

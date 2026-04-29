@@ -3,12 +3,14 @@
 }
 
 .diagnostics-panel {
-  max-width: 660px;
   margin: 0 auto;
-  padding: 8px 0;
+  width: 100%
 }
 
 .diagnostics-panel__section {
+  align-self: center;
+  max-width: 660px;
+  margin-top: 28px;
   margin-bottom: 28px;
 }
 
@@ -48,12 +50,15 @@
 
 .diagnostics-panel__recently-played {
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
+  width: 100%;
+  flex-wrap: nowrap;
 }
 
 .diagnostics-panel__recently-played img {
   width: 100%;
   height: auto;
+  max-width: 140px;
 }
 
 .diagnostics-panel__dream-game {

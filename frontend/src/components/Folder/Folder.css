@@ -58,6 +58,7 @@
 .folder-panel {
   background: var(--color-bg-main);
   color: var(--color-text-primary);
+  display: flex;
   flex: 1;
   overflow: hidden;
   padding: 16px;

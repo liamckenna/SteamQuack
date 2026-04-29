@@ -62,8 +62,14 @@ export type DiagnosticsResponse = {
   nichest_game: OwnedGame;
   recently_played: OwnedGame[];
   preferred_game_type: string;
+  super_genres_breakdown: Record<string, number>;
   genres_breakdown: Record<string, number>;
   sub_genres_breakdown: Record<string, number>;
+  visuals_viewpoints_breakdown: Record<string, number>;
+  themes_moods_breakdown: Record<string, number>;
+  features_breakdown: Record<string, number>;
+  players_breakdown: Record<string, number>;
+  assessments_breakdown: Record<string, number>;
 };
 
 export async function getRecommendations(

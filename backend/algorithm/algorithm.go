@@ -98,7 +98,7 @@ func CreateRecommendations(steamService *steam.ScrapingService, tasteProfile map
 		return sortedScores[i].Score > sortedScores[j].Score
 	})
 
-	topN := 9
+	topN := 36
 	if len(sortedScores) < topN {
 		topN = len(sortedScores)
 	}
