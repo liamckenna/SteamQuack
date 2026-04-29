@@ -13,13 +13,28 @@ const formatPercent = (value: RenderableText | TooltipValueType): string => {
   return `${Number(value).toFixed(1)}%`;
 }
 
-const processChartData = (data: Record<string, number>, threshold = 5) => {
+const processChartData = (data: Record<string, number>, minNumValues = 15) => {
+  let done = false;
+  let totalValue = 0;
   let otherValue = 0;
-  const processed = Object.entries(data).reduce((acc, [name, value]) => {
-    if (value < threshold) {
-      otherValue += value;
-    } else {
+  let numValuesAdded = 0;
+  let maxValue = Object.entries(data).reduce((sum, item) => sum + item[1], 0);
+  const processed = Object.entries(data).sort((a, b) => b[1] - a[1]).reduce((acc, [name, value]) => {
+    if (done) {
+      return acc;
+    }
+
+    if ((maxValue - (totalValue + value) < value) || (numValuesAdded + 1 >= minNumValues)) {
+      totalValue += value;
+      otherValue = maxValue - totalValue;
       acc.push({ name, value });
+      numValuesAdded++;
+      done = true;
+    } else {
+      totalValue += value;
+      otherValue = maxValue - totalValue
+      acc.push({ name, value });
+      numValuesAdded++
     }
     return acc;
   }, [] as { name: string; value: number }[]);
@@ -28,7 +43,7 @@ const processChartData = (data: Record<string, number>, threshold = 5) => {
     processed.push({ name: 'Other', value: otherValue });
   }
   
-  return processed.sort((a, b) => b.value - a.value);
+  return processed;
 };
 
 const getTopItem = (data: Record<string, number>) => {
