@@ -19,6 +19,10 @@ create site graphics - Liam
 write dialogue - Liam
 Recently played games algorithm integration - Liam
 
+## Left to-do:
+
+We plan on publishing the website properly to steamquack.com within the coming days. Apologies if it isn't up when you get to grade this!
+
 ## Backend API documentation:
 No additional backend functionality was developed this sprint.
 ## Backend Test Cases:
