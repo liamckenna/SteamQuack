@@ -163,8 +163,8 @@ func SteamLoginHandler(w http.ResponseWriter, r *http.Request) {
 	params.Set("openid.mode", "checkid_setup")
 	params.Set("openid.claimed_id", "http://specs.openid.net/auth/2.0/identifier_select")
 	params.Set("openid.identity", "http://specs.openid.net/auth/2.0/identifier_select")
-	params.Set("openid.return_to", "http://localhost:8080/auth/steam/callback")
-	params.Set("openid.realm", "http://localhost:8080/")
+	params.Set("openid.return_to", "https://steamquack.fly.dev/auth/steam/callback")
+	params.Set("openid.realm", "https://steamquack.fly.dev/")
 
 	loginURL := "https://steamcommunity.com/openid/login?" + params.Encode()
 	http.Redirect(w, r, loginURL, http.StatusFound)

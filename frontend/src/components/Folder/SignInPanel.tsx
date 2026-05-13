@@ -197,7 +197,7 @@ export default function SignInPanel({ onAuthStateChange }: SignInPanelProps) {
     }
   }
   function onSteamSignInClick() {
-    window.location.href = "http://localhost:8080/auth/steam/login";
+    window.location.href = "https://steamquack.fly.dev/auth/steam/login";
   }
 
   function onSignOut() {
