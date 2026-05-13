@@ -15,8 +15,9 @@ import (
 
 func enableCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		cfg := config.LoadConfig()
 		origin := r.Header.Get("Origin")
-		if origin == "http://localhost:5173" || origin == "http://localhost:5174" {
+		if origin == cfg.FrontendURL || origin == "http://localhost:5173" || origin == "http://localhost:5174" {
 			w.Header().Set("Access-Control-Allow-Origin", origin)
 		}
 
