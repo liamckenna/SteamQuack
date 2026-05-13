@@ -8,9 +8,9 @@ export type ProfileResult = {
   picture?: string;
   summary?: any;
 };
-
+const API_ROOT = import.meta.env.VITE_API_ROOT;
 export async function parseProfile(profile: string): Promise<ProfileResult> {
-  const res = await fetch("/api/profile/parse", {
+  const res = await fetch(`${API_ROOT}/profile/parse`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ profile } satisfies ProfileParseRequest),
@@ -76,7 +76,7 @@ export async function getRecommendations(
   profile: string,
   settings: Record<string, any>,
 ): Promise<RecommendationResponse> {
-  const res = await fetch("/api/recommendations", {
+  const res = await fetch(`${API_ROOT}/recommendations`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ profile, settings } satisfies RecommendationRequest),
@@ -92,7 +92,7 @@ export async function getRecommendations(
 export async function getDiagnostics(
   profile: string,
 ): Promise<DiagnosticsResponse> {
-  const res = await fetch("/api/user/diagnostics/" + profile, {
+  const res = await fetch(`${API_ROOT}/user/diagnostics/${profile}`, {
     method: "GET",
     headers: { "Content-Type": "application/json" },
   });
@@ -110,7 +110,7 @@ export type PreferencesOptionsResponse = {
 };
 
 export async function getPreferencesOptions(): Promise<PreferencesOptionsResponse> {
-  const res = await fetch("/api/preferences/options");
+  const res = await fetch(`${API_ROOT}/preferences/options`);
   if (!res.ok) {
     throw new Error(`getPreferencesOptions failed: ${res.status}`);
   }
@@ -132,7 +132,7 @@ export type UserProfileResponse = {
 };
 
 export async function getUserProfile(steamid: string): Promise<UserProfileResponse> {
-  const res = await fetch(`/api/user/profile/${steamid}`);
+  const res = await fetch(`${API_ROOT}/user/profile/${steamid}`);
   if (!res.ok) {
     throw new Error(`getUserProfile failed: ${res.status}`);
   }

@@ -23,8 +23,8 @@ export default function UserIcon() {
         setAvatarUrl(null);
         return;
       }
-
-      fetch(`http://localhost:8080/api/auth/steam-user/${returnedSteamID}`)
+      const API_ROOT = import.meta.env.VITE_API_ROOT;
+      fetch(`${API_ROOT}/auth/steam-user/${returnedSteamID}`)
         .then((res) => {
           if (!res.ok) {
             throw new Error("Failed to fetch Steam auth user");

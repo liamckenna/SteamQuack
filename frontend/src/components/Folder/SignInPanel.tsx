@@ -83,8 +83,8 @@ export default function SignInPanel({ onAuthStateChange }: SignInPanelProps) {
 
     unlockDialogue();
     lockDialogue();
-
-    fetch(`http://localhost:8080/api/auth/steam-user/${returnedSteamID}`)
+    const API_ROOT = import.meta.env.VITE_API_ROOT;
+    fetch(`${API_ROOT}/auth/steam-user/${returnedSteamID}`)
       .then((res) => {
         if (!res.ok) {
           throw new Error("Failed to fetch Steam auth user");
@@ -166,7 +166,8 @@ export default function SignInPanel({ onAuthStateChange }: SignInPanelProps) {
     }
 
     try {
-      const res = await fetch("http://localhost:8080/api/profile/parse", {
+      const API_ROOT = import.meta.env.VITE_API_ROOT;
+      const res = await fetch(`${API_ROOT}/profile/parse`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
