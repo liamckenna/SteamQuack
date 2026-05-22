@@ -7,12 +7,14 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"steamquack/backend/config"
 	"steamquack/backend/database"
 	"steamquack/backend/steam"
 )
 
 func TestRecommendationsHandler(t *testing.T) {
-	database.InitDatabase()
+	cfg := config.LoadConfig()
+	database.InitDatabase(cfg)
 	defer database.CloseDatabase()
 	t.Log("Database initialized")
 

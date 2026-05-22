@@ -3,6 +3,8 @@ package database
 import (
 	"log"
 
+	"steamquack/backend/config"
+
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -11,11 +13,11 @@ import (
 var DB *gorm.DB
 
 // initializes the SQLite database connection and runs migrations
-func InitDatabase() {
+func InitDatabase(cfg *config.Config) {
 	var err error
 
 	// Connect to SQLite database
-	DB, err = gorm.Open(sqlite.Open("steamquack.db"), &gorm.Config{
+	DB, err = gorm.Open(sqlite.Open(cfg.DatabasePath), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Warn),
 	})
 

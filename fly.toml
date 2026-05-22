@@ -12,6 +12,11 @@ primary_region = 'iad'
 
 [env]
   PORT = '8080'
+  DATABASE_PATH = '/data/steamquack.db'
+
+[mounts]
+  source = 'steamquack_db'
+  destination = '/data'
 
 [http_service]
   internal_port = 8080

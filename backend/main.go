@@ -35,7 +35,7 @@ func enableCORS(next http.Handler) http.Handler {
 
 func main() {
 	cfg := config.LoadConfig()
-	database.InitDatabase()
+	database.InitDatabase(cfg)
 	defer database.CloseDatabase()
 
 	log.Println("Database initialized")
