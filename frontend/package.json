@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://liamckenna.github.io/SteamQuack/",
+  "homepage": "https://www.steamquack.com",
   "scripts": {
     "dev": "vite",
     "dev:backend": "cd ../backend && go run .",
