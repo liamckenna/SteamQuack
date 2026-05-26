@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react";
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/SteamQuack/',
+  base: '/',
   plugins: [react()],
   // Add this block to force a single version of React
   resolve: {
