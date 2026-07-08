@@ -25,8 +25,10 @@ func LoadConfig() *Config {
 		SteamAPIKey:  steamAPIKey,
 		DatabasePath: getEnvOrDefault("DATABASE_PATH", "steamquack.db"),
 		ServerPort:   getEnvOrDefault("SERVER_PORT", "8080"),
-		FrontendURL:  getEnvOrDefault("FRONTEND_URL", "https://liamckenna.github.io"),
-		BackendURL:   getEnvOrDefault("BACKEND_URL", "https://steamquack.fly.dev"),
+		/*FrontendURL:  getEnvOrDefault("FRONTEND_URL", "https://liamckenna.github.io"),
+		BackendURL:   getEnvOrDefault("BACKEND_URL", "https://steamquack.fly.dev"),*/
+		FrontendURL: getEnvOrDefault("FRONTEND_URL", "https://www.steamquack.com"),
+		BackendURL:  getEnvOrDefault("BACKEND_URL", "https://steamquack.fly.dev"),
 	}
 }
 
