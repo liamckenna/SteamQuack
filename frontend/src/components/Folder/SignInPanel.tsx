@@ -197,7 +197,9 @@ export default function SignInPanel({ onAuthStateChange }: SignInPanelProps) {
     }
   }
   function onSteamSignInClick() {
-    window.location.href = "https://steamquack.fly.dev/auth/steam/login";
+    const API_ROOT = import.meta.env.VITE_API_ROOT;
+    const backendBase = API_ROOT.replace(/\/api$/, "");
+    window.location.href = `${backendBase}/auth/steam/login`;
   }
 
   function onSignOut() {

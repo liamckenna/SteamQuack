@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"steamquack/backend/config"
 	"steamquack/backend/database"
 	"steamquack/backend/steam"
 
@@ -137,108 +138,84 @@ func optionsHandler(w http.ResponseWriter, r *http.Request) {
 		"games": games,
 	})
 }
-func SteamLoginHandler(w http.ResponseWriter, r *http.Request) {
-	frontendOrigin := ""
 
-	if origin := r.Header.Get("Origin"); origin != "" {
-		frontendOrigin = origin
-	} else if referer := r.Header.Get("Referer"); referer != "" {
-		if u, err := url.Parse(referer); err == nil {
-			frontendOrigin = u.Scheme + "://" + u.Host
-		}
+func SteamLoginHandler(appConfig *config.Config) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		params := url.Values{}
+		params.Set("openid.ns", "http://specs.openid.net/auth/2.0")
+		params.Set("openid.mode", "checkid_setup")
+		params.Set("openid.claimed_id", "http://specs.openid.net/auth/2.0/identifier_select")
+		params.Set("openid.identity", "http://specs.openid.net/auth/2.0/identifier_select")
+
+		params.Set("openid.return_to", appConfig.BackendURL+"/auth/steam/callback")
+		params.Set("openid.realm", appConfig.BackendURL+"/")
+
+		loginURL := "https://steamcommunity.com/openid/login?" + params.Encode()
+		http.Redirect(w, r, loginURL, http.StatusFound)
 	}
-
-	if strings.HasPrefix(frontendOrigin, "http://localhost:") || strings.HasPrefix(frontendOrigin, "http://127.0.0.1:") {
-		http.SetCookie(w, &http.Cookie{
-			Name:     "frontend_origin",
-			Value:    url.QueryEscape(frontendOrigin),
-			Path:     "/",
-			HttpOnly: true,
-			SameSite: http.SameSiteLaxMode,
-		})
-	}
-
-	params := url.Values{}
-	params.Set("openid.ns", "http://specs.openid.net/auth/2.0")
-	params.Set("openid.mode", "checkid_setup")
-	params.Set("openid.claimed_id", "http://specs.openid.net/auth/2.0/identifier_select")
-	params.Set("openid.identity", "http://specs.openid.net/auth/2.0/identifier_select")
-	params.Set("openid.return_to", "https://steamquack.fly.dev/auth/steam/callback")
-	params.Set("openid.realm", "https://steamquack.fly.dev/")
-
-	loginURL := "https://steamcommunity.com/openid/login?" + params.Encode()
-	http.Redirect(w, r, loginURL, http.StatusFound)
 }
 
-func SteamCallbackHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("Steam callback hit")
-	log.Println("Full callback URL:", r.URL.String())
+func SteamCallbackHandler(appConfig *config.Config) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		log.Println("Steam callback hit")
+		log.Println("Full callback URL:", r.URL.String())
 
-	query := r.URL.Query()
+		query := r.URL.Query()
 
-	if query.Get("openid.mode") == "cancel" {
-		log.Println("Steam sign-in cancelled")
-		http.Error(w, "Steam sign-in was cancelled", http.StatusUnauthorized)
-		return
-	}
-
-	form := url.Values{}
-	for key, values := range query {
-		for _, value := range values {
-			form.Add(key, value)
+		if query.Get("openid.mode") == "cancel" {
+			log.Println("Steam sign-in cancelled")
+			http.Error(w, "Steam sign-in was cancelled", http.StatusUnauthorized)
+			return
 		}
-	}
-	form.Set("openid.mode", "check_authentication")
 
-	resp, err := http.PostForm("https://steamcommunity.com/openid/login", form)
-	if err != nil {
-		log.Println("PostForm error:", err)
-		http.Error(w, "Failed to verify Steam login", http.StatusInternalServerError)
-		return
-	}
-	defer resp.Body.Close()
-
-	bodyBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Println("ReadAll error:", err)
-		http.Error(w, "Failed to read Steam verification response", http.StatusInternalServerError)
-		return
-	}
-
-	body := string(bodyBytes)
-	log.Println("Steam verification response:", body)
-
-	if !strings.Contains(body, "is_valid:true") {
-		log.Println("Steam verification failed")
-		http.Error(w, "Invalid Steam login response", http.StatusUnauthorized)
-		return
-	}
-
-	claimedID := query.Get("openid.claimed_id")
-	log.Println("Claimed ID:", claimedID)
-
-	re := regexp.MustCompile(`^https?://steamcommunity\.com/openid/id/(\d+)$`)
-	matches := re.FindStringSubmatch(claimedID)
-	if len(matches) != 2 {
-		log.Println("Could not extract Steam ID")
-		http.Error(w, "Could not extract Steam ID", http.StatusUnauthorized)
-		return
-	}
-
-	steamID := matches[1]
-	log.Println("Authenticated SteamID:", steamID)
-
-	frontendOrigin := "http://localhost:5173"
-
-	if cookie, err := r.Cookie("frontend_origin"); err == nil {
-		if decoded, err := url.QueryUnescape(cookie.Value); err == nil {
-			if strings.HasPrefix(decoded, "http://localhost:") || strings.HasPrefix(decoded, "http://127.0.0.1:") {
-				frontendOrigin = decoded
+		form := url.Values{}
+		for key, values := range query {
+			for _, value := range values {
+				form.Add(key, value)
 			}
 		}
-	}
+		form.Set("openid.mode", "check_authentication")
 
-	http.Redirect(w, r, frontendOrigin+"/?steamid="+steamID, http.StatusFound)
+		resp, err := http.PostForm("https://steamcommunity.com/openid/login", form)
+		if err != nil {
+			log.Println("PostForm error:", err)
+			http.Error(w, "Failed to verify Steam login: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer resp.Body.Close()
+
+		bodyBytes, err := io.ReadAll(resp.Body)
+		if err != nil {
+			log.Println("ReadAll error:", err)
+			http.Error(w, "Failed to read Steam verification response", http.StatusInternalServerError)
+			return
+		}
+
+		body := string(bodyBytes)
+		log.Println("Steam verification response:", body)
+
+		if !strings.Contains(body, "is_valid:true") {
+			log.Println("Steam verification failed")
+			http.Error(w, "Invalid Steam login response", http.StatusUnauthorized)
+			return
+		}
+
+		claimedID := query.Get("openid.claimed_id")
+		log.Println("Claimed ID:", claimedID)
+
+		re := regexp.MustCompile(`^https?://steamcommunity\.com/openid/id/(\d+)$`)
+		matches := re.FindStringSubmatch(claimedID)
+		if len(matches) != 2 {
+			log.Println("Could not extract Steam ID")
+			http.Error(w, "Could not extract Steam ID", http.StatusUnauthorized)
+			return
+		}
+
+		steamID := matches[1]
+		log.Println("Authenticated SteamID:", steamID)
+
+		http.Redirect(w, r, appConfig.FrontendURL+"/?steamid="+steamID, http.StatusFound)
+	}
 }
 
 func GetSteamAuthUserHandler(steamService *steam.ScrapingService) http.HandlerFunc {

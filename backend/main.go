@@ -46,6 +46,7 @@ func main() {
 	scheduler.Start()
 	defer scheduler.Stop()
 
+	appConfig := config.LoadConfig()
 	// set up API routes
 	r := mux.NewRouter()
 	r.HandleFunc("/api/health", healthHandler).Methods(http.MethodGet)
@@ -62,8 +63,10 @@ func main() {
 	r.HandleFunc("/api/user/diagnostics/{steamid}", DiagnosticsHandler(steamService)).Methods(http.MethodGet)
 	r.HandleFunc("/api/stats", StatsHandler(steamService)).Methods("GET") // gets scraping statistics
 
-	r.HandleFunc("/auth/steam/login", SteamLoginHandler).Methods(http.MethodGet)
-	r.HandleFunc("/auth/steam/callback", SteamCallbackHandler).Methods(http.MethodGet)
+	r.HandleFunc("/auth/steam/login", SteamLoginHandler(appConfig)).Methods("GET")
+	r.HandleFunc("/auth/steam/callback", SteamCallbackHandler(appConfig)).Methods("GET")
+	//r.HandleFunc("/auth/steam/login", SteamLoginHandler).Methods(http.MethodGet)
+	//r.HandleFunc("/auth/steam/callback", SteamCallbackHandler).Methods(http.MethodGet)
 	r.HandleFunc("/api/auth/steam-user/{steamid}", GetSteamAuthUserHandler(steamService)).Methods(http.MethodGet)
 
 	// start server

@@ -11,6 +11,7 @@ type Config struct {
 	DatabasePath string
 	ServerPort   string
 	FrontendURL  string
+	BackendURL   string
 }
 
 // LoadConfig loads configuration from environment variables
@@ -25,6 +26,7 @@ func LoadConfig() *Config {
 		DatabasePath: getEnvOrDefault("DATABASE_PATH", "steamquack.db"),
 		ServerPort:   getEnvOrDefault("SERVER_PORT", "8080"),
 		FrontendURL:  getEnvOrDefault("FRONTEND_URL", "https://liamckenna.github.io"),
+		BackendURL:   getEnvOrDefault("BACKEND_URL", "https://steamquack.fly.dev"),
 	}
 }
 
