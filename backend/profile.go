@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"steamquack/backend/config"
@@ -80,6 +81,13 @@ func resolveVanityProfile(profile string) (string, error) {
 	key := cfg.SteamAPIKey
 	resp, err := http.Get("https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/?key=" + key + "&vanityurl=" + profile)
 
+	log.Printf("RESOLVE VANITY PROFILE DEBUG START")
+
+	log.Printf("API Key Used: %v", key)
+	log.Printf("API Response Status Code: %v", resp.StatusCode)
+	log.Printf("API Response Status: %v", resp.Status)
+	log.Printf("API Response Content-Type: %v", resp.Header.Get("Content-Type"))
+
 	if err != nil {
 		return "", fmt.Errorf("failed to fetch vanity profile")
 	}
@@ -98,6 +106,10 @@ func resolveVanityProfile(profile string) (string, error) {
 	if err := json.NewDecoder(resp.Body).Decode(&decodedResp); err != nil {
 		return "", fmt.Errorf("failed to decode steam JSON response")
 	}
+
+	log.Printf("Decoded response Success: %v", decodedResp.Response.Success)
+	log.Printf("Decoded response SteamID: %v", decodedResp.Response.SteamID)
+	log.Printf("Decoded response Message: %v", decodedResp.Response.Message)
 
 	if decodedResp.Response.Success != 1 {
 		return "", fmt.Errorf("steam profile not found")
@@ -136,8 +148,10 @@ func profileParseHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resolvedSteamID, err := resolveSteamProfileInput(input)
+	log.Printf("Resolved SteamID: %v", resolvedSteamID)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
+		log.Printf("Error occurred: %v", err)
 		_ = json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
 		return
 	}
