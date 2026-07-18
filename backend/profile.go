@@ -3,10 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
-	"regexp"
 	"steamquack/backend/config"
 	"steamquack/backend/database"
 	"steamquack/backend/steam"
@@ -42,7 +40,7 @@ func resolveSteamProfileInput(input string) (string, error) {
 	}
 
 	//plain vanity username
-	return resolveVanityProfileURL("https://steamcommunity.com/id/" + input)
+	return resolveVanityProfile(input)
 }
 
 func resolveSteamURL(raw string) (string, error) {
@@ -70,44 +68,42 @@ func resolveSteamURL(raw string) (string, error) {
 		return steamID, nil
 
 	case "id":
-		return resolveVanityProfileURL(raw)
+		return resolveVanityProfile(parts[1])
 
 	default:
 		return "", fmt.Errorf("unsupported steam profile url")
 	}
 }
 
-func resolveVanityProfileURL(profileURL string) (string, error) {
-	resp, err := http.Get(profileURL)
+func resolveVanityProfile(profile string) (string, error) {
+	cfg := config.LoadConfig()
+	key := cfg.SteamAPIKey
+	resp, err := http.Get("https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/?key=" + key + "&vanityurl=" + profile)
+
 	if err != nil {
 		return "", fmt.Errorf("failed to fetch vanity profile")
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("failed to fetch vanity profile")
+	}
+
+	contentType := resp.Header.Get("Content-Type")
+	if !strings.Contains(contentType, "application/json") {
+		return "", fmt.Errorf("steam API returned non-JSON response for profile")
+	}
+
+	var decodedResp steam.SteamResolveVanityURLResponse
+	if err := json.NewDecoder(resp.Body).Decode(&decodedResp); err != nil {
+		return "", fmt.Errorf("failed to decode steam JSON response")
+	}
+
+	if decodedResp.Response.Success != 1 {
 		return "", fmt.Errorf("steam profile not found")
 	}
 
-	bodyBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", fmt.Errorf("failed to read steam profile")
-	}
-
-	body := string(bodyBytes)
-
-	re := regexp.MustCompile(`g_steamID = "(\d+)"|"steamid":"(\d+)"`)
-	matches := re.FindStringSubmatch(body)
-	if len(matches) == 0 {
-		return "", fmt.Errorf("could not resolve vanity username")
-	}
-
-	for i := 1; i < len(matches); i++ {
-		if matches[i] != "" {
-			return matches[i], nil
-		}
-	}
-
-	return "", fmt.Errorf("could not resolve vanity username")
+	return decodedResp.Response.SteamID, nil
 }
 
 func isNumeric(s string) bool {
@@ -121,7 +117,6 @@ func isNumeric(s string) bool {
 	}
 	return true
 }
-
 
 func profileParseHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")

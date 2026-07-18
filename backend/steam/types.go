@@ -151,6 +151,14 @@ type SteamOwnedGame struct {
 	Playtime2Weeks  int    `json:"playtime_2weeks"`  // in minutes
 }
 
+type SteamResolveVanityURLResponse struct {
+	Response struct {
+		SteamID string `json:"steamid"`
+		Success int    `json:"success"`
+		Message string `json:"message"`
+	} `json:"response"`
+}
+
 type Settings struct {
 	ExcludedTags                  []string `json:"excluded_tags"`
 	ExcludedGames                 []uint32 `json:"excluded_games"`
