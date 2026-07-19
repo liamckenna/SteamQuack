@@ -320,3 +320,11 @@ func (s *ScrapingService) GetUserOwnedGames(steamID string) (*SteamOwnedGamesRes
 
 	return client.FetchOwnedGames(steamID)
 }
+
+// fetches a user's Steam ID using their vanity URL name
+func (s *ScrapingService) GetUserSteamID(profile string) (*SteamResolveVanityURLResponse, error) {
+	client := NewAPIClient(s.config.SteamAPIKey, 0)
+	defer client.Close()
+
+	return client.FetchSteamID(profile)
+}

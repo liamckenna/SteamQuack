@@ -205,6 +205,30 @@ func (c *APIClient) FetchOwnedGames(steamID string) (*SteamOwnedGamesResponse, e
 	return &gamesResp, nil
 }
 
+// fetches a user's Steam ID using their vanity URL name
+func (c *APIClient) FetchSteamID(profile string) (*SteamResolveVanityURLResponse, error) {
+	c.waitRateLimit() // Wait for rate limit
+
+	url := fmt.Sprintf("https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/?key=%s&vanityurl=%s", c.apiKey, profile)
+
+	resp, err := c.httpClient.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch Steam ID: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("Steam API returned status %d", resp.StatusCode)
+	}
+
+	var steamIDResponse SteamResolveVanityURLResponse
+	if err := json.NewDecoder(resp.Body).Decode(&steamIDResponse); err != nil {
+		return nil, fmt.Errorf("failed to decode Steam ID response: %w", err)
+	}
+
+	return &steamIDResponse, nil
+}
+
 // cleans up the rate limiter
 func (c *APIClient) Close() {
 	if c.rateLimiter != nil {

@@ -78,44 +78,50 @@ func resolveSteamURL(raw string) (string, error) {
 
 func resolveVanityProfile(profile string) (string, error) {
 	cfg := config.LoadConfig()
-	key := cfg.SteamAPIKey
-	resp, err := http.Get("https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/?key=" + key + "&vanityurl=" + profile)
-
-	log.Printf("RESOLVE VANITY PROFILE DEBUG START")
-
-	log.Printf("API Key Used: %v", key)
-	log.Printf("API Response Status Code: %v", resp.StatusCode)
-	log.Printf("API Response Status: %v", resp.Status)
-	log.Printf("API Response Content-Type: %v", resp.Header.Get("Content-Type"))
-
+	db := database.GetDB()
+	steamService := steam.NewScrapingService(cfg, db)
+	steamIDResponse, err := steamService.GetUserSteamID(profile)
 	if err != nil {
-		return "", fmt.Errorf("failed to fetch vanity profile")
+		return "", fmt.Errorf("failed to resolve vanity profile: %w", err)
 	}
-	defer resp.Body.Close()
+	//key := cfg.SteamAPIKey
+	//resp, err := http.Get("https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/?key=" + key + "&vanityurl=" + profile)
 
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("failed to fetch vanity profile")
-	}
+	//log.Printf("RESOLVE VANITY PROFILE DEBUG START")
 
-	contentType := resp.Header.Get("Content-Type")
-	if !strings.Contains(contentType, "application/json") {
-		return "", fmt.Errorf("steam API returned non-JSON response for profile")
-	}
+	//log.Printf("API Key Used: %v", key)
+	//log.Printf("API Response Status Code: %v", resp.StatusCode)
+	//log.Printf("API Response Status: %v", resp.Status)
+	//log.Printf("API Response Content-Type: %v", resp.Header.Get("Content-Type"))
 
-	var decodedResp steam.SteamResolveVanityURLResponse
-	if err := json.NewDecoder(resp.Body).Decode(&decodedResp); err != nil {
-		return "", fmt.Errorf("failed to decode steam JSON response")
-	}
+	// if err != nil {
+	// 	return "", fmt.Errorf("failed to fetch vanity profile")
+	// }
+	// defer resp.Body.Close()
 
-	log.Printf("Decoded response Success: %v", decodedResp.Response.Success)
-	log.Printf("Decoded response SteamID: %v", decodedResp.Response.SteamID)
-	log.Printf("Decoded response Message: %v", decodedResp.Response.Message)
+	// if resp.StatusCode != http.StatusOK {
+	// 	return "", fmt.Errorf("failed to fetch vanity profile")
+	// }
 
-	if decodedResp.Response.Success != 1 {
+	// contentType := resp.Header.Get("Content-Type")
+	// if !strings.Contains(contentType, "application/json") {
+	// 	return "", fmt.Errorf("steam API returned non-JSON response for profile")
+	// }
+
+	// var decodedResp steam.SteamResolveVanityURLResponse
+	// if err := json.NewDecoder(resp.Body).Decode(&decodedResp); err != nil {
+	// 	return "", fmt.Errorf("failed to decode steam JSON response")
+	// }
+
+	log.Printf("Decoded response Success: %v", steamIDResponse.Response.Success)
+	log.Printf("Decoded response SteamID: %v", steamIDResponse.Response.SteamID)
+	log.Printf("Decoded response Message: %v", steamIDResponse.Response.Message)
+
+	if steamIDResponse.Response.Success != 1 {
 		return "", fmt.Errorf("steam profile not found")
 	}
 
-	return decodedResp.Response.SteamID, nil
+	return steamIDResponse.Response.SteamID, nil
 }
 
 func isNumeric(s string) bool {
