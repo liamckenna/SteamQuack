@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"steamquack/backend/config"
@@ -84,41 +83,9 @@ func resolveVanityProfile(profile string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to resolve vanity profile: %w", err)
 	}
-	//key := cfg.SteamAPIKey
-	//resp, err := http.Get("https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/?key=" + key + "&vanityurl=" + profile)
-
-	//log.Printf("RESOLVE VANITY PROFILE DEBUG START")
-
-	//log.Printf("API Key Used: %v", key)
-	//log.Printf("API Response Status Code: %v", resp.StatusCode)
-	//log.Printf("API Response Status: %v", resp.Status)
-	//log.Printf("API Response Content-Type: %v", resp.Header.Get("Content-Type"))
-
-	// if err != nil {
-	// 	return "", fmt.Errorf("failed to fetch vanity profile")
-	// }
-	// defer resp.Body.Close()
-
-	// if resp.StatusCode != http.StatusOK {
-	// 	return "", fmt.Errorf("failed to fetch vanity profile")
-	// }
-
-	// contentType := resp.Header.Get("Content-Type")
-	// if !strings.Contains(contentType, "application/json") {
-	// 	return "", fmt.Errorf("steam API returned non-JSON response for profile")
-	// }
-
-	// var decodedResp steam.SteamResolveVanityURLResponse
-	// if err := json.NewDecoder(resp.Body).Decode(&decodedResp); err != nil {
-	// 	return "", fmt.Errorf("failed to decode steam JSON response")
-	// }
-
-	log.Printf("Decoded response Success: %v", steamIDResponse.Response.Success)
-	log.Printf("Decoded response SteamID: %v", steamIDResponse.Response.SteamID)
-	log.Printf("Decoded response Message: %v", steamIDResponse.Response.Message)
 
 	if steamIDResponse.Response.Success != 1 {
-		return "", fmt.Errorf("steam profile not found")
+		return "", fmt.Errorf("Steam profile not found")
 	}
 
 	return steamIDResponse.Response.SteamID, nil
@@ -154,10 +121,8 @@ func profileParseHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resolvedSteamID, err := resolveSteamProfileInput(input)
-	log.Printf("Resolved SteamID: %v", resolvedSteamID)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Printf("Error occurred: %v", err)
 		_ = json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
 		return
 	}
